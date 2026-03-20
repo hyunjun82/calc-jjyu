@@ -55,11 +55,14 @@ export default function InheritanceTaxCalculator() {
     // 배우자공제
     let spouseDeduction = 0;
     if (hasSpouse === 'yes') {
-      const spouse = parseFloat(spouseAmount) || 0;
-      // 배우자공제: 법정상속분 한도 내 (최소 5억, 최대 30억)
       const legalShare = netInheritance * (1.5 / (1.5 + children));
-      let spouseShare = spouse > legalShare ? legalShare : spouse;
-      spouseDeduction = Math.max(Math.min(spouseShare, 3000000000), 500000000);
+      // 배우자 상속액 미입력 시 법정상속분으로 기본 적용
+      const spouse = spouseAmount !== '' ? (parseFloat(spouseAmount) || 0) : legalShare;
+      let spouseShare = Math.min(spouse, legalShare);
+      // 실제로 상속받은 경우에만 최소 5억 보장, 미상속 시 공제 없음
+      spouseDeduction = spouse > 0
+        ? Math.max(Math.min(spouseShare, 3000000000), 500000000)
+        : 0;
     }
 
     // 금융재산공제는 이 계산기에서는 단순화하여 0으로 처리

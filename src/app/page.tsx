@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import CalculatorCard from '@/components/CalculatorCard';
 import {
   Ruler,
-  Home,
+  Home as HomeIcon,
   Target,
   TrendingUp,
   FileText,
@@ -45,7 +45,7 @@ const calculators: Calculator[] = [
     id: 'brokerage',
     title: '중개수수료',
     description: '부동산 거래 시 중개수수료를 계산합니다.',
-    icon: <Home size={20} strokeWidth={1.6} />,
+    icon: <HomeIcon size={20} strokeWidth={1.6} />,
     href: '/calculators/real-estate/brokerage',
     category: 'estate',
   },

@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { ChevronRight } from 'lucide-react';
 
 interface ScheduleItem {
   month: number;
@@ -131,296 +132,271 @@ export default function LoanCalculator() {
   const displaySchedule = showFullSchedule ? result?.schedule : result?.schedule.slice(0, 12);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="mx-auto max-w-[1200px] px-6 py-8 md:py-12">
       {/* Breadcrumb */}
-      <div className="bg-white border-b border-slate-200">
-        <div className="max-w-4xl mx-auto px-4 py-4 text-sm text-slate-600">
-          <Link href="/" className="hover:text-blue-600">
-            홈
-          </Link>
-          <span className="mx-2">/</span>
-          <Link href="/calculators" className="hover:text-blue-600">
-            금융 계산기
-          </Link>
-          <span className="mx-2">/</span>
-          <span className="text-slate-900 font-medium">대출이자 계산기</span>
-        </div>
+      <nav className="flex items-center gap-1.5 text-[13px] text-fg-muted mb-8">
+        <Link href="/" className="hover:text-fg transition-colors">홈</Link>
+        <ChevronRight size={12} />
+        <span className="text-fg-secondary">금융 계산기</span>
+        <ChevronRight size={12} />
+        <span className="text-fg font-medium">대출이자 계산기</span>
+      </nav>
+
+      {/* Title */}
+      <div className="mb-8">
+        <h1 className="text-[28px] md:text-[36px] font-bold text-fg tracking-tight mb-3">대출이자 계산기</h1>
+        <p className="text-[15px] text-fg-secondary">
+          대출 상환 방식에 따른 월 납부액, 총 이자, 상환 스케줄을 계산해보세요.
+        </p>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Title */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-3">
-            <h1 className="text-3xl font-bold text-slate-900">대출이자 계산기</h1>
-            <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-medium">
-              금융
-            </span>
-          </div>
-          <p className="text-slate-600">
-            대출 상환 방식에 따른 월 납부액, 총 이자, 상환 스케줄을 계산해보세요.
-          </p>
-        </div>
+      <div className="grid gap-8 lg:grid-cols-3">
+        {/* Form */}
+        <div className="lg:col-span-1">
+          <div className="border border-border rounded-2xl bg-surface p-6 sticky top-20">
+            <h2 className="text-[16px] font-semibold text-fg mb-5">계산 설정</h2>
 
-        <div className="grid gap-8 lg:grid-cols-3">
-          {/* Form */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-md p-6 sticky top-4">
-              <h2 className="text-lg font-semibold text-slate-900 mb-4">계산 설정</h2>
-
-              <div className="space-y-4">
-                {/* 대출금액 */}
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                    대출금액 <span className="text-red-500">*</span>
-                  </label>
-                  <div className="flex items-center">
-                    <input
-                      type="number"
-                      value={loanAmount}
-                      onChange={(e) => setLoanAmount(Number(e.target.value))}
-                      className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-sm text-slate-600">원</span>
-                  </div>
-                  <p className="text-xs text-slate-500 mt-1">
-                    {loanAmount.toLocaleString('ko-KR')} 원
-                  </p>
+            <div className="space-y-4">
+              {/* 대출금액 */}
+              <div>
+                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
+                  대출금액 <span className="text-negative">*</span>
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    value={loanAmount}
+                    onChange={(e) => setLoanAmount(Number(e.target.value))}
+                    className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
+                  />
+                  <span className="text-[13px] text-fg-muted">원</span>
                 </div>
-
-                {/* 연이율 */}
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                    연이율 <span className="text-red-500">*</span>
-                  </label>
-                  <div className="flex items-center">
-                    <input
-                      type="number"
-                      value={annualRate}
-                      onChange={(e) => setAnnualRate(Number(e.target.value))}
-                      step="0.01"
-                      className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-sm text-slate-600">%</span>
-                  </div>
-                </div>
-
-                {/* 대출기간 */}
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                    대출기간 <span className="text-red-500">*</span>
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      value={duration}
-                      onChange={(e) => setDuration(Number(e.target.value))}
-                      className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <select
-                      value={durationType}
-                      onChange={(e) => setDurationType(e.target.value)}
-                      className="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="year">년</option>
-                      <option value="month">개월</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* 상환방식 */}
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    상환방식 <span className="text-red-500">*</span>
-                  </label>
-                  <div className="space-y-2">
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        value="equal-payment"
-                        checked={repaymentType === 'equal-payment'}
-                        onChange={(e) => setRepaymentType(e.target.value)}
-                        className="mr-2"
-                      />
-                      <span className="text-sm text-slate-700">원리금균등</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        value="equal-principal"
-                        checked={repaymentType === 'equal-principal'}
-                        onChange={(e) => setRepaymentType(e.target.value)}
-                        className="mr-2"
-                      />
-                      <span className="text-sm text-slate-700">원금균등</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        value="bullet"
-                        checked={repaymentType === 'bullet'}
-                        onChange={(e) => setRepaymentType(e.target.value)}
-                        className="mr-2"
-                      />
-                      <span className="text-sm text-slate-700">만기일시상환</span>
-                    </label>
-                  </div>
-                </div>
-
-                <button
-                  onClick={handleCalculate}
-                  className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition"
-                >
-                  계산하기
-                </button>
+                <p className="text-[12px] text-fg-muted mt-1.5">
+                  {loanAmount.toLocaleString('ko-KR')} 원
+                </p>
               </div>
+
+              {/* 연이율 */}
+              <div>
+                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
+                  연이율 <span className="text-negative">*</span>
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    value={annualRate}
+                    onChange={(e) => setAnnualRate(Number(e.target.value))}
+                    step="0.01"
+                    className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
+                  />
+                  <span className="text-[13px] text-fg-muted">%</span>
+                </div>
+              </div>
+
+              {/* 대출기간 */}
+              <div>
+                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
+                  대출기간 <span className="text-negative">*</span>
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    value={duration}
+                    onChange={(e) => setDuration(Number(e.target.value))}
+                    className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
+                  />
+                  <select
+                    value={durationType}
+                    onChange={(e) => setDurationType(e.target.value)}
+                    className="h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
+                  >
+                    <option value="year">년</option>
+                    <option value="month">개월</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* 상환방식 */}
+              <div>
+                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
+                  상환방식 <span className="text-negative">*</span>
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { value: 'equal-payment', label: '원리금균등' },
+                    { value: 'equal-principal', label: '원금균등' },
+                    { value: 'bullet', label: '만기일시상환' },
+                  ].map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setRepaymentType(option.value)}
+                      className={`px-4 h-9 rounded-lg text-[13px] font-medium transition-colors ${
+                        repaymentType === option.value
+                          ? 'bg-accent text-accent-fg'
+                          : 'bg-bg-tertiary text-fg-secondary hover:text-fg hover:bg-surface-active'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                onClick={handleCalculate}
+                className="w-full h-11 bg-accent hover:bg-accent-hover text-accent-fg font-medium rounded-xl transition-colors"
+              >
+                계산하기
+              </button>
             </div>
           </div>
+        </div>
 
-          {/* Results */}
-          <div className="lg:col-span-2">
-            {result && (
-              <div className="space-y-6">
-                {/* Summary Cards */}
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="bg-white rounded-lg shadow-md p-4">
-                    <p className="text-sm text-slate-600 mb-1">월 납부액</p>
-                    <p className="text-2xl font-bold text-slate-900">
-                      {result.monthlyPayment.toLocaleString('ko-KR', {
+        {/* Results */}
+        <div className="lg:col-span-2">
+          {result && (
+            <div className="space-y-6">
+              {/* Summary Cards */}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="border border-border rounded-xl bg-surface p-4">
+                  <p className="text-[13px] text-fg-secondary mb-1">월 납부액</p>
+                  <p className="text-[22px] font-bold text-fg tabular-nums">
+                    {result.monthlyPayment.toLocaleString('ko-KR', {
+                      maximumFractionDigits: 0,
+                    })}
+                  </p>
+                  <p className="text-[12px] text-fg-muted mt-1">원</p>
+                </div>
+
+                <div className="border border-border rounded-xl bg-surface p-4">
+                  <p className="text-[13px] text-fg-secondary mb-1">총 이자</p>
+                  <p className="text-[22px] font-bold text-fg tabular-nums">
+                    {result.totalInterest.toLocaleString('ko-KR', {
+                      maximumFractionDigits: 0,
+                    })}
+                  </p>
+                  <p className="text-[12px] text-fg-muted mt-1">원</p>
+                </div>
+
+                <div className="border border-border rounded-xl bg-surface p-4">
+                  <p className="text-[13px] text-fg-secondary mb-1">총 상환금액</p>
+                  <p className="text-[22px] font-bold text-fg tabular-nums">
+                    {result.totalPayment.toLocaleString('ko-KR', {
+                      maximumFractionDigits: 0,
+                    })}
+                  </p>
+                  <p className="text-[12px] text-fg-muted mt-1">원</p>
+                </div>
+
+                {result.firstMonthPayment && (
+                  <div className="border border-border rounded-xl bg-surface p-4">
+                    <p className="text-[13px] text-fg-secondary mb-1">첫 달 / 마지막 달</p>
+                    <p className="text-[14px] font-bold text-fg tabular-nums">
+                      {result.firstMonthPayment.toLocaleString('ko-KR', {
+                        maximumFractionDigits: 0,
+                      })}
+                      <span className="text-fg-muted mx-1">/</span>
+                      {result.lastMonthPayment?.toLocaleString('ko-KR', {
                         maximumFractionDigits: 0,
                       })}
                     </p>
-                    <p className="text-xs text-slate-500 mt-1">원</p>
+                    <p className="text-[12px] text-fg-muted mt-1">원</p>
                   </div>
-
-                  <div className="bg-white rounded-lg shadow-md p-4">
-                    <p className="text-sm text-slate-600 mb-1">총 이자</p>
-                    <p className="text-2xl font-bold text-red-600">
-                      {result.totalInterest.toLocaleString('ko-KR', {
-                        maximumFractionDigits: 0,
-                      })}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1">원</p>
-                  </div>
-
-                  <div className="bg-white rounded-lg shadow-md p-4">
-                    <p className="text-sm text-slate-600 mb-1">총 상환금액</p>
-                    <p className="text-2xl font-bold text-blue-600">
-                      {result.totalPayment.toLocaleString('ko-KR', {
-                        maximumFractionDigits: 0,
-                      })}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1">원</p>
-                  </div>
-
-                  {result.firstMonthPayment && (
-                    <div className="bg-white rounded-lg shadow-md p-4">
-                      <p className="text-sm text-slate-600 mb-1">첫 달 / 마지막 달</p>
-                      <p className="text-sm font-bold text-slate-900">
-                        {result.firstMonthPayment.toLocaleString('ko-KR', {
-                          maximumFractionDigits: 0,
-                        })}
-                        <span className="text-slate-500 mx-1">/</span>
-                        {result.lastMonthPayment?.toLocaleString('ko-KR', {
-                          maximumFractionDigits: 0,
-                        })}
-                      </p>
-                      <p className="text-xs text-slate-500 mt-1">원</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Schedule Table */}
-                <div className="bg-white rounded-lg shadow-md p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-slate-900">상환 스케줄</h3>
-                    {result.schedule.length > 12 && (
-                      <button
-                        onClick={() => setShowFullSchedule(!showFullSchedule)}
-                        className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-                      >
-                        {showFullSchedule ? '접기' : '펼치기'}
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead className="border-b border-slate-300 bg-slate-50">
-                        <tr>
-                          <th className="text-left px-3 py-2 font-semibold text-slate-700">
-                            월
-                          </th>
-                          <th className="text-right px-3 py-2 font-semibold text-slate-700">
-                            납부액
-                          </th>
-                          <th className="text-right px-3 py-2 font-semibold text-slate-700">
-                            원금
-                          </th>
-                          <th className="text-right px-3 py-2 font-semibold text-slate-700">
-                            이자
-                          </th>
-                          <th className="text-right px-3 py-2 font-semibold text-slate-700">
-                            잔금
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {displaySchedule?.map((item, idx) => (
-                          <tr
-                            key={idx}
-                            className={
-                              idx % 2 === 0
-                                ? 'bg-white'
-                                : 'bg-slate-50'
-                            }
-                          >
-                            <td className="px-3 py-2 text-slate-900 font-medium">
-                              {item.month}
-                            </td>
-                            <td className="text-right px-3 py-2 text-slate-900">
-                              {item.payment.toLocaleString('ko-KR', {
-                                maximumFractionDigits: 0,
-                              })}
-                            </td>
-                            <td className="text-right px-3 py-2 text-blue-600">
-                              {item.principal.toLocaleString('ko-KR', {
-                                maximumFractionDigits: 0,
-                              })}
-                            </td>
-                            <td className="text-right px-3 py-2 text-red-600">
-                              {item.interest.toLocaleString('ko-KR', {
-                                maximumFractionDigits: 0,
-                              })}
-                            </td>
-                            <td className="text-right px-3 py-2 text-slate-900 font-medium">
-                              {item.balance.toLocaleString('ko-KR', {
-                                maximumFractionDigits: 0,
-                              })}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  {!showFullSchedule && result.schedule.length > 12 && (
-                    <p className="text-xs text-slate-500 mt-2">
-                      처음 12개월만 표시됩니다.
-                    </p>
-                  )}
-                </div>
-
-                {/* Tips */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-slate-900 mb-2">💡 팁</h3>
-                  <ul className="text-sm text-slate-700 space-y-1">
-                    <li>• 원리금균등: 매월 동일한 금액을 납부하는 가장 일반적인 방식</li>
-                    <li>• 원금균등: 초반에는 많이 내고 점차 감소하는 방식</li>
-                    <li>• 만기일시상환: 이자만 내다가 마지막에 원금을 일시 상환</li>
-                  </ul>
-                </div>
+                )}
               </div>
-            )}
-          </div>
+
+              {/* Schedule Table */}
+              <div className="border border-border rounded-xl bg-surface overflow-hidden">
+                <div className="flex items-center justify-between p-4">
+                  <h3 className="text-[16px] font-semibold text-fg">상환 스케줄</h3>
+                  {result.schedule.length > 12 && (
+                    <button
+                      onClick={() => setShowFullSchedule(!showFullSchedule)}
+                      className="text-[13px] text-fg-secondary hover:text-fg font-medium"
+                    >
+                      {showFullSchedule ? '접기' : '펼치기'}
+                    </button>
+                  )}
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-bg-secondary border-b border-border">
+                      <tr>
+                        <th className="text-left text-[13px] font-medium text-fg-secondary px-4 py-3">
+                          월
+                        </th>
+                        <th className="text-right text-[13px] font-medium text-fg-secondary px-4 py-3">
+                          납부액
+                        </th>
+                        <th className="text-right text-[13px] font-medium text-fg-secondary px-4 py-3">
+                          원금
+                        </th>
+                        <th className="text-right text-[13px] font-medium text-fg-secondary px-4 py-3">
+                          이자
+                        </th>
+                        <th className="text-right text-[13px] font-medium text-fg-secondary px-4 py-3">
+                          잔금
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {displaySchedule?.map((item, idx) => (
+                        <tr
+                          key={idx}
+                          className={
+                            idx % 2 === 0
+                              ? 'bg-surface'
+                              : 'bg-bg-secondary'
+                          }
+                        >
+                          <td className="text-[13px] text-fg tabular-nums px-4 py-2.5 font-medium">
+                            {item.month}
+                          </td>
+                          <td className="text-right text-[13px] text-fg tabular-nums px-4 py-2.5">
+                            {item.payment.toLocaleString('ko-KR', {
+                              maximumFractionDigits: 0,
+                            })}
+                          </td>
+                          <td className="text-right text-[13px] text-fg tabular-nums px-4 py-2.5">
+                            {item.principal.toLocaleString('ko-KR', {
+                              maximumFractionDigits: 0,
+                            })}
+                          </td>
+                          <td className="text-right text-[13px] text-fg tabular-nums px-4 py-2.5">
+                            {item.interest.toLocaleString('ko-KR', {
+                              maximumFractionDigits: 0,
+                            })}
+                          </td>
+                          <td className="text-right text-[13px] text-fg tabular-nums px-4 py-2.5 font-medium">
+                            {item.balance.toLocaleString('ko-KR', {
+                              maximumFractionDigits: 0,
+                            })}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {!showFullSchedule && result.schedule.length > 12 && (
+                  <p className="text-[12px] text-fg-muted px-4 py-3">
+                    처음 12개월만 표시됩니다.
+                  </p>
+                )}
+              </div>
+
+              {/* Tips */}
+              <div className="border border-border rounded-xl bg-bg-secondary p-5">
+                <h3 className="text-[14px] font-semibold text-fg mb-3">팁</h3>
+                <ul className="text-[13px] text-fg-secondary leading-relaxed space-y-1">
+                  <li>· 원리금균등: 매월 동일한 금액을 납부하는 가장 일반적인 방식</li>
+                  <li>· 원금균등: 초반에는 많이 내고 점차 감소하는 방식</li>
+                  <li>· 만기일시상환: 이자만 내다가 마지막에 원금을 일시 상환</li>
+                </ul>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

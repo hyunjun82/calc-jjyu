@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ChevronRight } from 'lucide-react';
 
 interface CalculatorLayoutProps {
   title: string;
@@ -14,13 +15,6 @@ const categoryNames = {
   labor: '근로',
 };
 
-const categoryColors = {
-  estate: 'category-color-estate',
-  tax: 'category-color-tax',
-  finance: 'category-color-finance',
-  labor: 'category-color-labor',
-};
-
 export default function CalculatorLayout({
   title,
   description,
@@ -28,37 +22,31 @@ export default function CalculatorLayout({
   children,
 }: CalculatorLayoutProps) {
   return (
-    <div className="container-narrow py-8 md:py-12">
+    <div className="mx-auto max-w-[1200px] px-6 py-8 md:py-12">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-slate-600 mb-8">
-        <Link href="/" className="hover:text-blue-600 transition-colors">
+      <nav className="flex items-center gap-1.5 text-[13px] text-fg-muted mb-8">
+        <Link href="/" className="hover:text-fg transition-colors">
           홈
         </Link>
-        <span className="text-slate-400">/</span>
-        <span>{categoryNames[category]}</span>
-        <span className="text-slate-400">/</span>
-        <span className="text-slate-900 font-medium">{title}</span>
+        <ChevronRight size={12} />
+        <span className="text-fg-secondary">{categoryNames[category]}</span>
+        <ChevronRight size={12} />
+        <span className="text-fg font-medium">{title}</span>
       </nav>
 
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center gap-3 mb-4">
-          <h1 className="text-3xl md:text-4xl font-bold text-slate-900">
-            {title}
-          </h1>
-          <span className={`badge-base ${categoryColors[category]} bg-opacity-10 border border-current border-opacity-30`}>
-            {categoryNames[category]}
-          </span>
-        </div>
-        <p className="text-lg text-slate-600">{description}</p>
+        <h1 className="text-[28px] md:text-[36px] font-bold text-fg tracking-tight mb-2">
+          {title}
+        </h1>
+        <p className="text-[15px] text-fg-secondary">{description}</p>
       </div>
 
-      {/* Separator */}
-      <div className="separator mb-8" />
-
-      {/* Calculator Card */}
-      <div className="card-elevated p-6 md:p-8">
-        {children}
+      {/* Content */}
+      <div className="border border-border rounded-2xl bg-surface overflow-hidden">
+        <div className="p-6 md:p-8">
+          {children}
+        </div>
       </div>
     </div>
   );

@@ -166,7 +166,7 @@ export default function BrokerageFeeCalculatorPage() {
             </span>
           </div>
           <p className="text-fg-secondary text-lg">
-            2024년 기준 한국 부동산 중개수수료를 정확하게 계산합니다. 매매, 전세, 월세 거래를 지원합니다.
+            2021년 10월 개정 기준 한국 부동산 중개수수료를 정확하게 계산합니다. 매매, 전세, 월세 거래를 지원합니다.
           </p>
         </div>
       </div>

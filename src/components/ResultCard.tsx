@@ -23,35 +23,33 @@ export default function ResultCard({
   mainLabel,
 }: ResultCardProps) {
   return (
-    <div className="card-elevated p-6 md:p-8 bg-gradient-to-br from-blue-50 to-slate-50">
-      <h3 className="text-sm font-semibold text-slate-600 uppercase tracking-wide mb-6">
+    <div className="rounded-xl border border-border bg-surface p-6">
+      <h3 className="text-[12px] font-medium text-fg-muted uppercase tracking-wider mb-5">
         {title}
       </h3>
 
       {mainValue !== undefined && mainLabel && (
-        <div className="mb-8 pb-8 border-b border-slate-200">
-          <p className="text-sm text-slate-600 mb-2">{mainLabel}</p>
-          <p className="text-4xl md:text-5xl font-bold text-blue-600">
+        <div className="mb-6 pb-6 border-b border-border">
+          <p className="text-[13px] text-fg-secondary mb-1.5">{mainLabel}</p>
+          <p className="text-[36px] md:text-[42px] font-bold text-fg tracking-tight">
             {formatNumber(mainValue)}
           </p>
         </div>
       )}
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         {items.map((item, index) => (
           <div key={index} className="flex items-center justify-between">
             <span
-              className={`text-sm ${
-                item.highlight
-                  ? 'font-semibold text-slate-900'
-                  : 'text-slate-600'
+              className={`text-[13px] ${
+                item.highlight ? 'font-semibold text-fg' : 'text-fg-secondary'
               }`}
             >
               {item.label}
             </span>
             <span
-              className={`font-medium ${
-                item.highlight ? 'text-lg text-blue-600' : 'text-slate-900'
+              className={`font-medium tabular-nums ${
+                item.highlight ? 'text-[15px] text-fg' : 'text-[14px] text-fg'
               }`}
             >
               {formatNumber(item.value)}

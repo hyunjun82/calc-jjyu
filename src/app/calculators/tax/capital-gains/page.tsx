@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
+import { ChevronRight } from 'lucide-react';
 
 export default function CapitalGainsTaxCalculator() {
   const [householdCount, setHouseholdCount] = useState('1');
@@ -31,21 +33,18 @@ export default function CapitalGainsTaxCalculator() {
     holdingYears: number,
     residingYears: number,
     isSingleHouse: boolean,
-    isAdjusted: boolean
+    _isAdjusted: boolean
   ): number => {
-    if (isSingleHouse && !isAdjusted) {
-      // 1세대1주택: 보유 연 4% + 거주 연 4% (최대 80%)
-      const holdingDiscount = Math.min(holdingYears * 4, 40);
-      const residingDiscount = isResiding === 'yes' ? Math.min(residingYears * 4, 40) : 0;
+    if (isSingleHouse) {
+      // 1세대1주택: 보유 3년 이상부터 연 4% (3년=12%, 최대 40%) + 거주 2년 이상부터 연 4% (2년=8%, 최대 40%)
+      const holdingDiscount = holdingYears >= 3 ? Math.min(12 + (holdingYears - 3) * 4, 40) : 0;
+      const residingDiscount = isResiding === 'yes' && residingYears >= 2
+        ? Math.min(8 + (residingYears - 2) * 4, 40)
+        : 0;
       return Math.min(holdingDiscount + residingDiscount, 80);
     }
 
-    if (isAdjusted) {
-      // 조정지역: 장기보유특별공제 없음
-      return 0;
-    }
-
-    // 일반: 3년이상 6%, 매년 2%p 추가 (최대 30%)
+    // 일반(다주택): 3년이상 6%, 매년 2%p 추가 (최대 30%)
     if (holdingYears >= 3) {
       return Math.min(6 + (holdingYears - 3) * 2, 30);
     }
@@ -72,6 +71,13 @@ export default function CapitalGainsTaxCalculator() {
     if (taxableIncome <= 500000000) return 0.40;
     if (taxableIncome <= 1000000000) return 0.42;
     return 0.45;
+  };
+
+  const getProgressiveSurchargeTaxDeduction = (taxableIncome: number, surchargeRate: number): number => {
+    // 중과세율 = 기본세율 + 가산세율로, 각 구간의 누진공제를 재계산
+    // 누진공제 = 직전 구간까지의 (현 구간 세율 - 해당 구간 세율) * 해당 구간 상한
+    // 가산세율은 모든 구간에 동일하게 적용되므로 기본 누진공제와 동일
+    return getProgressiveTaxDeduction(taxableIncome);
   };
 
   const handleCalculate = () => {
@@ -109,12 +115,14 @@ export default function CapitalGainsTaxCalculator() {
     const progressiveDeduction = getProgressiveTaxDeduction(taxableIncome);
     let calculatedTax = taxableIncome * baseTaxRate - progressiveDeduction;
 
-    // 중과세율 적용
-    if (isAdjustedArea === 'yes') {
+    // 중과세율 적용 (조정지역 다주택자: 기본세율 + 20%p/30%p 가산)
+    if (isAdjustedArea === 'yes' && taxableIncome > 0) {
       if (householdCount === '2') {
-        calculatedTax *= 1.2; // +20%p
+        const surchargeRate = 0.20;
+        calculatedTax = taxableIncome * (baseTaxRate + surchargeRate) - getProgressiveSurchargeTaxDeduction(taxableIncome, surchargeRate);
       } else if (householdCount === '3') {
-        calculatedTax *= 1.3; // +30%p
+        const surchargeRate = 0.30;
+        calculatedTax = taxableIncome * (baseTaxRate + surchargeRate) - getProgressiveSurchargeTaxDeduction(taxableIncome, surchargeRate);
       }
     }
 
@@ -134,126 +142,126 @@ export default function CapitalGainsTaxCalculator() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
-      <div className="max-w-4xl mx-auto">
-        {/* Breadcrumb */}
-        <nav className="text-sm text-gray-600 mb-6">
-          홈 &gt; 세금 &gt; 양도소득세 계산기
-        </nav>
+    <div className="mx-auto max-w-[1200px] px-6">
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-1.5 text-[13px] text-fg-muted mb-8">
+        <Link href="/" className="hover:text-fg transition-colors">홈</Link>
+        <ChevronRight size={12} />
+        <span className="text-fg-secondary">세금</span>
+        <ChevronRight size={12} />
+        <span className="text-fg font-medium">양도소득세 계산기</span>
+      </nav>
 
-        {/* Title */}
-        <div className="flex items-center gap-3 mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">양도소득세 계산기</h1>
-          <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold">
-            세금
-          </span>
-        </div>
+      {/* Title */}
+      <h1 className="text-[28px] md:text-[36px] font-bold text-fg tracking-tight mb-4">양도소득세 계산기</h1>
 
-        {/* Description */}
-        <p className="text-gray-600 mb-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          주택 양도 시 발생하는 양도소득세를 계산합니다. 보유기간, 거주여부 등에 따른 장기보유특별공제를 적용하여 정확한 세액을 산출합니다.
-        </p>
+      {/* Description */}
+      <p className="text-[15px] text-fg-secondary mb-8">
+        주택 양도 시 발생하는 양도소득세를 계산합니다. 보유기간, 거주여부 등에 따른 장기보유특별공제를 적용하여 정확한 세액을 산출합니다.
+      </p>
 
-        {/* Form */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
+      {/* Form */}
+      <div className="border border-border rounded-2xl bg-surface overflow-hidden mb-8">
+        <div className="p-6 md:p-8">
           {/* 주택수 */}
           <div className="mb-6">
-            <label className="block text-sm font-semibold text-gray-900 mb-3">
+            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
               주택수 선택
             </label>
-            <div className="space-y-2">
+            <div className="flex flex-wrap gap-2">
               {['1', '2', '3'].map((val) => (
-                <label key={val} className="flex items-center">
-                  <input
-                    type="radio"
-                    name="household"
-                    value={val}
-                    checked={householdCount === val}
-                    onChange={(e) => setHouseholdCount(e.target.value)}
-                    className="w-4 h-4"
-                  />
-                  <span className="ml-2 text-gray-700">
-                    {val === '1' && '1주택'}
-                    {val === '2' && '2주택'}
-                    {val === '3' && '3주택 이상'}
-                  </span>
-                </label>
+                <button
+                  key={val}
+                  type="button"
+                  onClick={() => setHouseholdCount(val)}
+                  className={`px-4 h-9 rounded-lg text-[13px] font-medium transition-colors ${
+                    householdCount === val
+                      ? 'bg-accent text-accent-fg'
+                      : 'bg-bg-tertiary text-fg-secondary hover:text-fg hover:bg-surface-active'
+                  }`}
+                >
+                  {val === '1' && '1주택'}
+                  {val === '2' && '2주택'}
+                  {val === '3' && '3주택 이상'}
+                </button>
               ))}
             </div>
           </div>
 
           {/* 조정대상지역 */}
           <div className="mb-6">
-            <label className="block text-sm font-semibold text-gray-900 mb-3">
+            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
               조정대상지역 여부
             </label>
-            <div className="space-y-2">
+            <div className="flex flex-wrap gap-2">
               {[
                 { val: 'no', label: '아니오' },
                 { val: 'yes', label: '예' },
               ].map(({ val, label }) => (
-                <label key={val} className="flex items-center">
-                  <input
-                    type="radio"
-                    name="adjusted"
-                    value={val}
-                    checked={isAdjustedArea === val}
-                    onChange={(e) => setIsAdjustedArea(e.target.value)}
-                    className="w-4 h-4"
-                  />
-                  <span className="ml-2 text-gray-700">{label}</span>
-                </label>
+                <button
+                  key={val}
+                  type="button"
+                  onClick={() => setIsAdjustedArea(val)}
+                  className={`px-4 h-9 rounded-lg text-[13px] font-medium transition-colors ${
+                    isAdjustedArea === val
+                      ? 'bg-accent text-accent-fg'
+                      : 'bg-bg-tertiary text-fg-secondary hover:text-fg hover:bg-surface-active'
+                  }`}
+                >
+                  {label}
+                </button>
               ))}
             </div>
           </div>
 
           {/* 취득일자 */}
           <div className="mb-6">
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
+            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
               취득일자 *
             </label>
             <input
               type="date"
               value={acquisitionDate}
               onChange={(e) => setAcquisitionDate(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg placeholder:text-fg-muted outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
             />
           </div>
 
           {/* 양도일자 */}
           <div className="mb-6">
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
+            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
               양도일자 *
             </label>
             <input
               type="date"
               value={disposalDate}
               onChange={(e) => setDisposalDate(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg placeholder:text-fg-muted outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
             />
           </div>
 
           {/* 거주여부 */}
           <div className="mb-6">
-            <label className="block text-sm font-semibold text-gray-900 mb-3">
+            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
               거주여부
             </label>
-            <div className="space-y-2">
+            <div className="flex flex-wrap gap-2">
               {[
                 { val: 'yes', label: '예' },
                 { val: 'no', label: '아니오' },
               ].map(({ val, label }) => (
-                <label key={val} className="flex items-center">
-                  <input
-                    type="radio"
-                    name="residing"
-                    value={val}
-                    checked={isResiding === val}
-                    onChange={(e) => setIsResiding(e.target.value)}
-                    className="w-4 h-4"
-                  />
-                  <span className="ml-2 text-gray-700">{label}</span>
-                </label>
+                <button
+                  key={val}
+                  type="button"
+                  onClick={() => setIsResiding(val)}
+                  className={`px-4 h-9 rounded-lg text-[13px] font-medium transition-colors ${
+                    isResiding === val
+                      ? 'bg-accent text-accent-fg'
+                      : 'bg-bg-tertiary text-fg-secondary hover:text-fg hover:bg-surface-active'
+                  }`}
+                >
+                  {label}
+                </button>
               ))}
             </div>
           </div>
@@ -261,14 +269,14 @@ export default function CapitalGainsTaxCalculator() {
           {/* 거주기간 */}
           {isResiding === 'yes' && (
             <div className="mb-6">
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
+              <label className="block text-[13px] font-medium text-fg-secondary mb-2">
                 거주기간 (년)
               </label>
               <input
                 type="number"
                 value={residingYears}
                 onChange={(e) => setResidingYears(parseInt(e.target.value) || 0)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg placeholder:text-fg-muted outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
                 min="0"
               />
             </div>
@@ -276,42 +284,42 @@ export default function CapitalGainsTaxCalculator() {
 
           {/* 양도가액 */}
           <div className="mb-6">
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
+            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
               양도가액 (원) *
             </label>
             <input
               type="number"
               value={disposalAmount}
               onChange={(e) => setDisposalAmount(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg placeholder:text-fg-muted outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
               placeholder="0"
             />
           </div>
 
           {/* 취득가액 */}
           <div className="mb-6">
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
+            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
               취득가액 (원) *
             </label>
             <input
               type="number"
               value={acquisitionAmount}
               onChange={(e) => setAcquisitionAmount(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg placeholder:text-fg-muted outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
               placeholder="0"
             />
           </div>
 
           {/* 필요경비 */}
           <div className="mb-6">
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
+            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
               필요경비 (원)
             </label>
             <input
               type="number"
               value={necessaryExpenses}
               onChange={(e) => setNecessaryExpenses(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg placeholder:text-fg-muted outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
               placeholder="0"
             />
           </div>
@@ -319,85 +327,83 @@ export default function CapitalGainsTaxCalculator() {
           {/* Calculate Button */}
           <button
             onClick={handleCalculate}
-            className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg transition"
+            className="w-full h-11 bg-accent hover:bg-accent-hover text-accent-fg font-medium rounded-xl transition-colors"
           >
             계산하기
           </button>
         </div>
+      </div>
 
-        {/* Results */}
-        {results && (
-          <div className="bg-white rounded-lg shadow p-6 mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">계산 결과</h2>
+      {/* Results */}
+      {results && (
+        <div className="border border-border rounded-2xl bg-surface p-6 md:p-8 mb-8">
+          <h2 className="text-[18px] font-bold text-fg mb-6">계산 결과</h2>
 
-            <div className="space-y-4">
-              <div className="flex justify-between items-center border-b pb-3">
-                <span className="text-gray-700">보유기간</span>
-                <span className="font-semibold text-gray-900">
-                  {results.holdingYears}년
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center border-b pb-3">
-                <span className="text-gray-700">양도차익</span>
-                <span className="font-semibold text-gray-900">
-                  {formatNumber(results.capitalGain)}원
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center border-b pb-3">
-                <span className="text-gray-700">장기보유특별공제 ({results.discountRate}%)</span>
-                <span className="font-semibold text-gray-900">
-                  {formatNumber(results.longTermDiscount)}원
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center border-b pb-3">
-                <span className="text-gray-700">기본공제</span>
-                <span className="font-semibold text-gray-900">2,500,000원</span>
-              </div>
-
-              <div className="flex justify-between items-center border-b pb-3">
-                <span className="text-gray-700">과세표준</span>
-                <span className="font-semibold text-gray-900">
-                  {formatNumber(results.taxableIncome)}원
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center border-b pb-3">
-                <span className="text-gray-700">산출세액</span>
-                <span className="font-semibold text-gray-900">
-                  {formatNumber(results.calculatedTax)}원
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center border-b pb-3">
-                <span className="text-gray-700">지방소득세 (10%)</span>
-                <span className="font-semibold text-gray-900">
-                  {formatNumber(results.localTax)}원
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center pt-3 bg-green-50 p-4 rounded-lg">
-                <span className="text-lg font-bold text-gray-900">총 납부세액</span>
-                <span className="text-2xl font-bold text-green-600">
-                  {formatNumber(results.totalTax)}원
-                </span>
-              </div>
-            </div>
+          <div className="flex justify-between items-center py-3 border-b border-border">
+            <span className="text-[13px] text-fg-secondary">보유기간</span>
+            <span className="text-[14px] font-medium text-fg tabular-nums">
+              {results.holdingYears}년
+            </span>
           </div>
-        )}
 
-        {/* Tips */}
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-          <h3 className="font-bold text-gray-900 mb-4">계산 팁</h3>
-          <ul className="space-y-2 text-sm text-gray-700">
-            <li>• 1주택은 장기보유특별공제율이 높아 세부담이 낮을 수 있습니다.</li>
-            <li>• 조정대상지역의 2주택·3주택은 중과세율이 적용됩니다.</li>
-            <li>• 거주기간이 길수록 1주택의 공제율이 높아집니다.</li>
-            <li>• 필요경비는 중개수수료, 등기료 등을 포함할 수 있습니다.</li>
-          </ul>
+          <div className="flex justify-between items-center py-3 border-b border-border">
+            <span className="text-[13px] text-fg-secondary">양도차익</span>
+            <span className="text-[14px] font-medium text-fg tabular-nums">
+              {formatNumber(results.capitalGain)}원
+            </span>
+          </div>
+
+          <div className="flex justify-between items-center py-3 border-b border-border">
+            <span className="text-[13px] text-fg-secondary">장기보유특별공제 ({results.discountRate}%)</span>
+            <span className="text-[14px] font-medium text-fg tabular-nums">
+              {formatNumber(results.longTermDiscount)}원
+            </span>
+          </div>
+
+          <div className="flex justify-between items-center py-3 border-b border-border">
+            <span className="text-[13px] text-fg-secondary">기본공제</span>
+            <span className="text-[14px] font-medium text-fg tabular-nums">2,500,000원</span>
+          </div>
+
+          <div className="flex justify-between items-center py-3 border-b border-border">
+            <span className="text-[13px] text-fg-secondary">과세표준</span>
+            <span className="text-[14px] font-medium text-fg tabular-nums">
+              {formatNumber(results.taxableIncome)}원
+            </span>
+          </div>
+
+          <div className="flex justify-between items-center py-3 border-b border-border">
+            <span className="text-[13px] text-fg-secondary">산출세액</span>
+            <span className="text-[14px] font-medium text-fg tabular-nums">
+              {formatNumber(results.calculatedTax)}원
+            </span>
+          </div>
+
+          <div className="flex justify-between items-center py-3 border-b border-border">
+            <span className="text-[13px] text-fg-secondary">지방소득세 (10%)</span>
+            <span className="text-[14px] font-medium text-fg tabular-nums">
+              {formatNumber(results.localTax)}원
+            </span>
+          </div>
+
+          <div className="flex justify-between items-center py-4 bg-bg-secondary rounded-xl px-4 mt-2">
+            <span className="text-[15px] font-semibold text-fg">총 납부세액</span>
+            <span className="text-[24px] font-bold text-fg tabular-nums">
+              {formatNumber(results.totalTax)}원
+            </span>
+          </div>
         </div>
+      )}
+
+      {/* Tips */}
+      <div className="border border-border rounded-xl bg-bg-secondary p-5 mt-8">
+        <h3 className="text-[14px] font-semibold text-fg mb-3">계산 팁</h3>
+        <ul className="space-y-1.5 text-[13px] text-fg-secondary leading-relaxed">
+          <li>· 1주택은 장기보유특별공제율이 높아 세부담이 낮을 수 있습니다.</li>
+          <li>· 조정대상지역의 2주택·3주택은 중과세율이 적용됩니다.</li>
+          <li>· 거주기간이 길수록 1주택의 공제율이 높아집니다.</li>
+          <li>· 필요경비는 중개수수료, 등기료 등을 포함할 수 있습니다.</li>
+        </ul>
       </div>
     </div>
   );

@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
+import { ChevronRight } from 'lucide-react';
 
 interface ScoreBreakdown {
   housingPeriod: number;
@@ -118,38 +120,33 @@ export default function SubscriptionPointsPage() {
   const accountScore = calculateAccountPeriodPoints();
   const totalScore = housingScore + dependentScore + accountScore;
 
-  const getCompetitivenessLevel = (): { level: string; color: string; description: string } => {
+  const getCompetitivenessLevel = (): { level: string; description: string } => {
     if (totalScore >= 70) {
       return {
         level: '매우 높음',
-        color: 'text-red-600 bg-red-50',
         description: '당첨 가능성이 높습니다',
       };
     }
     if (totalScore >= 60) {
       return {
         level: '높음',
-        color: 'text-orange-600 bg-orange-50',
         description: '당첨 가능성이 있습니다',
       };
     }
     if (totalScore >= 45) {
       return {
         level: '중간',
-        color: 'text-yellow-600 bg-yellow-50',
         description: '당첨 가능성이 있으나 경쟁이 있습니다',
       };
     }
     if (totalScore >= 30) {
       return {
         level: '낮음',
-        color: 'text-blue-600 bg-blue-50',
         description: '경쟁이 치열합니다',
       };
     }
     return {
       level: '매우 낮음',
-      color: 'text-gray-600 bg-gray-50',
       description: '가점 획득이 필요합니다',
     };
   };
@@ -157,46 +154,48 @@ export default function SubscriptionPointsPage() {
   const competitiveness = getCompetitivenessLevel();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+    <>
       {/* Breadcrumb */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-4 text-sm text-gray-600">
-          <span>홈</span>
-          <span className="mx-2">&gt;</span>
-          <span>부동산</span>
-          <span className="mx-2">&gt;</span>
-          <span className="text-gray-900 font-medium">청약가점</span>
+      <div className="border-b border-border">
+        <div className="mx-auto max-w-[1200px] px-6 py-4">
+          <nav className="flex items-center gap-1.5 text-[13px] text-fg-muted mb-8">
+            <Link href="/" className="hover:text-fg">홈</Link>
+            <ChevronRight size={12} />
+            <span>부동산</span>
+            <ChevronRight size={12} />
+            <span className="text-fg font-medium">청약가점</span>
+          </nav>
         </div>
       </div>
 
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="border-b border-border">
+        <div className="mx-auto max-w-[1200px] px-6 py-8">
           <div className="flex items-center gap-3 mb-4">
-            <h1 className="text-3xl font-bold text-gray-900">청약가점 계산기</h1>
-            <span className="inline-block bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full">
+            <h1 className="text-3xl font-bold text-fg">청약가점 계산기</h1>
+            <span className="inline-block bg-bg-tertiary text-fg-secondary text-xs font-semibold px-3 py-1 rounded-full">
               부동산
             </span>
           </div>
-          <p className="text-gray-600 text-lg">
+          <p className="text-fg-secondary text-lg">
             주택청약 시 필요한 가점을 정확하게 계산합니다. 무주택기간, 부양가족수, 청약통장 가입기간을 고려합니다.
           </p>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="mx-auto max-w-[1200px] px-6 py-8">
         {/* Calculator Card */}
-        <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
-          <div className="bg-gradient-to-r from-blue-50 to-blue-25 px-8 py-6 border-b-2 border-blue-200">
-            <h2 className="text-xl font-bold text-gray-900">청약가점 입력</h2>
+        <div className="bg-surface rounded-xl shadow-[var(--shadow-md)] overflow-hidden mb-8">
+          <div className="bg-bg-secondary px-8 py-6 border-b border-border">
+            <h2 className="text-[12px] font-medium text-fg-muted uppercase tracking-wider">청약가점 입력</h2>
           </div>
 
           <div className="p-8">
             {/* Category 1: Housing Period (32점 만점) */}
-            <div className="mb-8 pb-8 border-b-2 border-gray-200">
-              <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <span className="inline-block w-8 h-8 bg-blue-500 text-white rounded-full text-center leading-8 text-sm font-bold">
+            <div className="mb-8 pb-8 border-b border-border">
+              <h3 className="text-lg font-bold text-fg mb-6 flex items-center gap-2">
+                <span className="inline-block w-8 h-8 bg-accent text-accent-fg rounded-full text-center leading-8 text-sm font-bold">
                   1
                 </span>
                 무주택기간 (32점 만점)
@@ -204,7 +203,7 @@ export default function SubscriptionPointsPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-fg-secondary mb-2">
                     나이 (만 나이)
                   </label>
                   <input
@@ -213,13 +212,13 @@ export default function SubscriptionPointsPage() {
                     onChange={(e) => setAge(e.target.value)}
                     min="20"
                     max="100"
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-lg"
+                    className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg placeholder:text-fg-muted outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
                     placeholder="30"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-fg-secondary mb-2">
                     결혼 여부
                   </label>
                   <div className="flex gap-4">
@@ -227,8 +226,8 @@ export default function SubscriptionPointsPage() {
                       onClick={() => setIsMarried(false)}
                       className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all duration-200 ${
                         !isMarried
-                          ? 'bg-blue-500 text-white shadow-lg'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          ? 'bg-accent text-accent-fg'
+                          : 'bg-bg-tertiary text-fg-secondary hover:text-fg hover:bg-surface-active'
                       }`}
                     >
                       미혼
@@ -237,8 +236,8 @@ export default function SubscriptionPointsPage() {
                       onClick={() => setIsMarried(true)}
                       className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all duration-200 ${
                         isMarried
-                          ? 'bg-blue-500 text-white shadow-lg'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          ? 'bg-accent text-accent-fg'
+                          : 'bg-bg-tertiary text-fg-secondary hover:text-fg hover:bg-surface-active'
                       }`}
                     >
                       기혼
@@ -248,7 +247,7 @@ export default function SubscriptionPointsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-fg-secondary mb-2">
                   무주택기간 (년)
                 </label>
                 <input
@@ -257,19 +256,19 @@ export default function SubscriptionPointsPage() {
                   onChange={(e) => setHousingYears(e.target.value)}
                   min="0"
                   step="0.1"
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-lg"
+                  className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg placeholder:text-fg-muted outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
                   placeholder="5"
                 />
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-xs text-fg-muted mt-2">
                   주택을 소유하지 않은 기간을 입력하세요. (소수점 입력 가능)
                 </p>
               </div>
             </div>
 
             {/* Category 2: Dependents (35점 만점) */}
-            <div className="mb-8 pb-8 border-b-2 border-gray-200">
-              <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <span className="inline-block w-8 h-8 bg-green-500 text-white rounded-full text-center leading-8 text-sm font-bold">
+            <div className="mb-8 pb-8 border-b border-border">
+              <h3 className="text-lg font-bold text-fg mb-6 flex items-center gap-2">
+                <span className="inline-block w-8 h-8 bg-accent text-accent-fg rounded-full text-center leading-8 text-sm font-bold">
                   2
                 </span>
                 부양가족수 (35점 만점)
@@ -282,30 +281,30 @@ export default function SubscriptionPointsPage() {
                     onClick={() => setDependents(num.toString())}
                     className={`py-3 px-2 rounded-lg font-semibold transition-all duration-200 text-sm ${
                       dependents === num.toString()
-                        ? 'bg-green-500 text-white shadow-lg'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        ? 'bg-accent text-accent-fg'
+                        : 'bg-bg-tertiary text-fg-secondary hover:text-fg hover:bg-surface-active'
                     }`}
                   >
                     {num === 6 ? '6명+' : num + '명'}
                   </button>
                 ))}
               </div>
-              <p className="text-xs text-gray-500 mt-4">
+              <p className="text-xs text-fg-muted mt-4">
                 배우자, 미혼 자녀, 부모님 등 생계를 같이 하는 가족을 포함합니다.
               </p>
             </div>
 
             {/* Category 3: Account Period (17점 만점) */}
             <div className="mb-8">
-              <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <span className="inline-block w-8 h-8 bg-purple-500 text-white rounded-full text-center leading-8 text-sm font-bold">
+              <h3 className="text-lg font-bold text-fg mb-6 flex items-center gap-2">
+                <span className="inline-block w-8 h-8 bg-accent text-accent-fg rounded-full text-center leading-8 text-sm font-bold">
                   3
                 </span>
                 청약통장 가입기간 (17점 만점)
               </h3>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-fg-secondary mb-2">
                   가입기간 (개월)
                 </label>
                 <input
@@ -314,10 +313,10 @@ export default function SubscriptionPointsPage() {
                   onChange={(e) => setAccountMonths(e.target.value)}
                   min="0"
                   step="1"
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-lg"
+                  className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg placeholder:text-fg-muted outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
                   placeholder="12"
                 />
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-xs text-fg-muted mt-2">
                   청약통장을 개설한 이후 현재까지의 개월 수를 입력하세요.
                 </p>
               </div>
@@ -326,165 +325,165 @@ export default function SubscriptionPointsPage() {
         </div>
 
         {/* Results */}
-        <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
-          <div className="bg-gradient-to-r from-green-50 to-green-25 px-8 py-6 border-b-2 border-green-200">
-            <h2 className="text-xl font-bold text-gray-900">계산 결과</h2>
+        <div className="bg-surface rounded-xl shadow-[var(--shadow-md)] overflow-hidden mb-8">
+          <div className="bg-bg-secondary px-8 py-6 border-b border-border">
+            <h2 className="text-[12px] font-medium text-fg-muted uppercase tracking-wider">계산 결과</h2>
           </div>
 
           <div className="p-8">
             {/* Score Breakdown */}
             <div className="space-y-4 mb-8">
               {/* Housing Period Score */}
-              <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="flex items-center justify-between p-4 bg-bg-secondary rounded-xl border border-border">
                 <div>
-                  <p className="font-semibold text-gray-700">무주택기간</p>
-                  <p className="text-xs text-gray-500">최대 32점</p>
+                  <p className="font-semibold text-fg-secondary">무주택기간</p>
+                  <p className="text-xs text-fg-muted">최대 32점</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-3xl font-bold text-blue-600">{housingScore}</p>
-                  <p className="text-xs text-gray-500">점</p>
+                  <p className="text-3xl font-bold text-fg">{housingScore}</p>
+                  <p className="text-xs text-fg-muted">점</p>
                 </div>
               </div>
 
               {/* Dependent Score */}
-              <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
+              <div className="flex items-center justify-between p-4 bg-bg-secondary rounded-xl border border-border">
                 <div>
-                  <p className="font-semibold text-gray-700">부양가족수</p>
-                  <p className="text-xs text-gray-500">최대 35점</p>
+                  <p className="font-semibold text-fg-secondary">부양가족수</p>
+                  <p className="text-xs text-fg-muted">최대 35점</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-3xl font-bold text-green-600">{dependentScore}</p>
-                  <p className="text-xs text-gray-500">점</p>
+                  <p className="text-3xl font-bold text-fg">{dependentScore}</p>
+                  <p className="text-xs text-fg-muted">점</p>
                 </div>
               </div>
 
               {/* Account Period Score */}
-              <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg border border-purple-200">
+              <div className="flex items-center justify-between p-4 bg-bg-secondary rounded-xl border border-border">
                 <div>
-                  <p className="font-semibold text-gray-700">청약통장 가입기간</p>
-                  <p className="text-xs text-gray-500">최대 17점</p>
+                  <p className="font-semibold text-fg-secondary">청약통장 가입기간</p>
+                  <p className="text-xs text-fg-muted">최대 17점</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-3xl font-bold text-purple-600">{accountScore}</p>
-                  <p className="text-xs text-gray-500">점</p>
+                  <p className="text-3xl font-bold text-fg">{accountScore}</p>
+                  <p className="text-xs text-fg-muted">점</p>
                 </div>
               </div>
             </div>
 
             {/* Total Score */}
-            <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white mb-8">
-              <p className="text-lg font-semibold mb-2">총 청약가점</p>
+            <div className="bg-bg-secondary rounded-xl p-6 mb-8">
+              <p className="text-[12px] font-medium text-fg-muted uppercase tracking-wider mb-2">총 청약가점</p>
               <div className="flex items-baseline gap-2">
-                <span className="text-5xl font-bold">{totalScore}</span>
-                <span className="text-lg font-semibold">/ 84점</span>
+                <span className="text-[36px] font-bold text-fg tabular-nums">{totalScore}</span>
+                <span className="text-lg font-semibold text-fg-secondary">/ 84점</span>
               </div>
             </div>
 
             {/* Progress Bar */}
             <div className="mb-8">
-              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+              <div className="w-full bg-bg-tertiary rounded-full h-3 overflow-hidden">
                 <div
-                  className="bg-blue-500 h-full transition-all duration-300"
+                  className="bg-accent h-full transition-all duration-300"
                   style={{ width: `${(totalScore / 84) * 100}%` }}
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-2 text-right">
+              <p className="text-xs text-fg-muted mt-2 text-right">
                 {((totalScore / 84) * 100).toFixed(1)}%
               </p>
             </div>
 
             {/* Competitiveness Level */}
-            <div className={`p-6 rounded-lg border-2 border-current ${competitiveness.color}`}>
-              <p className="text-sm font-semibold text-gray-600 mb-2">경쟁력 평가</p>
-              <p className="text-2xl font-bold mb-2">{competitiveness.level}</p>
-              <p className="text-sm">{competitiveness.description}</p>
+            <div className="p-6 rounded-xl border border-border bg-bg-secondary">
+              <p className="text-[12px] font-medium text-fg-muted uppercase tracking-wider mb-2">경쟁력 평가</p>
+              <p className="text-2xl font-bold text-fg mb-2">{competitiveness.level}</p>
+              <p className="text-[13px] text-fg-secondary">{competitiveness.description}</p>
             </div>
           </div>
         </div>
 
         {/* Score Guidelines */}
-        <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
-          <div className="bg-gradient-to-r from-gray-50 to-gray-25 px-8 py-6 border-b-2 border-gray-200">
-            <h2 className="text-xl font-bold text-gray-900">가점 기준표</h2>
+        <div className="bg-surface rounded-xl shadow-[var(--shadow-md)] overflow-hidden mb-8">
+          <div className="bg-bg-secondary px-8 py-6 border-b border-border">
+            <h2 className="text-[12px] font-medium text-fg-muted uppercase tracking-wider">가점 기준표</h2>
           </div>
 
           {/* Housing Period Table */}
           <div className="p-8">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">1. 무주택기간 (32점 만점)</h3>
+            <h3 className="text-lg font-bold text-fg mb-4">1. 무주택기간 (32점 만점)</h3>
             <div className="overflow-x-auto mb-8">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-gray-50 border-b-2 border-gray-200">
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">기간</th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">가점</th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">기간</th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">가점</th>
+                  <tr className="bg-bg-secondary border-b border-border">
+                    <th className="px-4 py-3 text-left text-[13px] font-medium text-fg-secondary">기간</th>
+                    <th className="px-4 py-3 text-left text-[13px] font-medium text-fg-secondary">가점</th>
+                    <th className="px-4 py-3 text-left text-[13px] font-medium text-fg-secondary">기간</th>
+                    <th className="px-4 py-3 text-left text-[13px] font-medium text-fg-secondary">가점</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr className="border-b border-gray-200 hover:bg-blue-50">
-                    <td className="px-4 py-3">만 30세 미만 미혼</td>
-                    <td className="px-4 py-3 font-medium">0점</td>
-                    <td className="px-4 py-3">10~11년</td>
-                    <td className="px-4 py-3 font-medium">22점</td>
+                  <tr className="border-b border-border hover:bg-surface-hover">
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">만 30세 미만 미혼</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">0점</td>
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">10~11년</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">22점</td>
                   </tr>
-                  <tr className="border-b border-gray-200 hover:bg-blue-50">
-                    <td className="px-4 py-3">1년 미만</td>
-                    <td className="px-4 py-3 font-medium">2점</td>
-                    <td className="px-4 py-3">11~12년</td>
-                    <td className="px-4 py-3 font-medium">24점</td>
+                  <tr className="border-b border-border hover:bg-surface-hover">
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">1년 미만</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">2점</td>
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">11~12년</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">24점</td>
                   </tr>
-                  <tr className="border-b border-gray-200 hover:bg-blue-50">
-                    <td className="px-4 py-3">1~2년</td>
-                    <td className="px-4 py-3 font-medium">4점</td>
-                    <td className="px-4 py-3">12~13년</td>
-                    <td className="px-4 py-3 font-medium">26점</td>
+                  <tr className="border-b border-border hover:bg-surface-hover">
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">1~2년</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">4점</td>
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">12~13년</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">26점</td>
                   </tr>
-                  <tr className="border-b border-gray-200 hover:bg-blue-50">
-                    <td className="px-4 py-3">2~3년</td>
-                    <td className="px-4 py-3 font-medium">6점</td>
-                    <td className="px-4 py-3">13~14년</td>
-                    <td className="px-4 py-3 font-medium">28점</td>
+                  <tr className="border-b border-border hover:bg-surface-hover">
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">2~3년</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">6점</td>
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">13~14년</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">28점</td>
                   </tr>
-                  <tr className="border-b border-gray-200 hover:bg-blue-50">
-                    <td className="px-4 py-3">3~4년</td>
-                    <td className="px-4 py-3 font-medium">8점</td>
-                    <td className="px-4 py-3">14~15년</td>
-                    <td className="px-4 py-3 font-medium">30점</td>
+                  <tr className="border-b border-border hover:bg-surface-hover">
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">3~4년</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">8점</td>
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">14~15년</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">30점</td>
                   </tr>
-                  <tr className="border-b border-gray-200 hover:bg-blue-50">
-                    <td className="px-4 py-3">4~5년</td>
-                    <td className="px-4 py-3 font-medium">10점</td>
-                    <td className="px-4 py-3">15년 이상</td>
-                    <td className="px-4 py-3 font-medium">32점</td>
+                  <tr className="border-b border-border hover:bg-surface-hover">
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">4~5년</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">10점</td>
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">15년 이상</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">32점</td>
                   </tr>
-                  <tr className="border-b border-gray-200 hover:bg-blue-50">
-                    <td className="px-4 py-3">5~6년</td>
-                    <td className="px-4 py-3 font-medium">12점</td>
+                  <tr className="border-b border-border hover:bg-surface-hover">
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">5~6년</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">12점</td>
                     <td></td>
                     <td></td>
                   </tr>
-                  <tr className="border-b border-gray-200 hover:bg-blue-50">
-                    <td className="px-4 py-3">6~7년</td>
-                    <td className="px-4 py-3 font-medium">14점</td>
+                  <tr className="border-b border-border hover:bg-surface-hover">
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">6~7년</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">14점</td>
                     <td></td>
                     <td></td>
                   </tr>
-                  <tr className="border-b border-gray-200 hover:bg-blue-50">
-                    <td className="px-4 py-3">7~8년</td>
-                    <td className="px-4 py-3 font-medium">16점</td>
+                  <tr className="border-b border-border hover:bg-surface-hover">
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">7~8년</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">16점</td>
                     <td></td>
                     <td></td>
                   </tr>
-                  <tr className="border-b border-gray-200 hover:bg-blue-50">
-                    <td className="px-4 py-3">8~9년</td>
-                    <td className="px-4 py-3 font-medium">18점</td>
+                  <tr className="border-b border-border hover:bg-surface-hover">
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">8~9년</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">18점</td>
                     <td></td>
                     <td></td>
                   </tr>
-                  <tr className="hover:bg-blue-50">
-                    <td className="px-4 py-3">9~10년</td>
-                    <td className="px-4 py-3 font-medium">20점</td>
+                  <tr className="hover:bg-surface-hover">
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">9~10년</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">20점</td>
                     <td></td>
                     <td></td>
                   </tr>
@@ -493,106 +492,106 @@ export default function SubscriptionPointsPage() {
             </div>
 
             {/* Dependent Table */}
-            <h3 className="text-lg font-bold text-gray-900 mb-4">2. 부양가족수 (35점 만점)</h3>
+            <h3 className="text-lg font-bold text-fg mb-4">2. 부양가족수 (35점 만점)</h3>
             <div className="overflow-x-auto mb-8">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-gray-50 border-b-2 border-gray-200">
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">가족수</th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">0명</th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">1명</th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">2명</th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">3명</th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">4명</th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">5명</th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">6명+</th>
+                  <tr className="bg-bg-secondary border-b border-border">
+                    <th className="px-4 py-3 text-left text-[13px] font-medium text-fg-secondary">가족수</th>
+                    <th className="px-4 py-3 text-left text-[13px] font-medium text-fg-secondary">0명</th>
+                    <th className="px-4 py-3 text-left text-[13px] font-medium text-fg-secondary">1명</th>
+                    <th className="px-4 py-3 text-left text-[13px] font-medium text-fg-secondary">2명</th>
+                    <th className="px-4 py-3 text-left text-[13px] font-medium text-fg-secondary">3명</th>
+                    <th className="px-4 py-3 text-left text-[13px] font-medium text-fg-secondary">4명</th>
+                    <th className="px-4 py-3 text-left text-[13px] font-medium text-fg-secondary">5명</th>
+                    <th className="px-4 py-3 text-left text-[13px] font-medium text-fg-secondary">6명+</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr className="bg-gray-50 border-b border-gray-200 hover:bg-blue-50">
-                    <td className="px-4 py-3 font-semibold text-gray-700">가점</td>
-                    <td className="px-4 py-3 font-medium">5점</td>
-                    <td className="px-4 py-3 font-medium">10점</td>
-                    <td className="px-4 py-3 font-medium">15점</td>
-                    <td className="px-4 py-3 font-medium">20점</td>
-                    <td className="px-4 py-3 font-medium">25점</td>
-                    <td className="px-4 py-3 font-medium">30점</td>
-                    <td className="px-4 py-3 font-medium">35점</td>
+                  <tr className="bg-bg-secondary border-b border-border hover:bg-surface-hover">
+                    <td className="px-4 py-3 text-[13px] font-semibold text-fg-secondary">가점</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">5점</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">10점</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">15점</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">20점</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">25점</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">30점</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">35점</td>
                   </tr>
                 </tbody>
               </table>
             </div>
 
             {/* Account Period Table */}
-            <h3 className="text-lg font-bold text-gray-900 mb-4">3. 청약통장 가입기간 (17점 만점)</h3>
+            <h3 className="text-lg font-bold text-fg mb-4">3. 청약통장 가입기간 (17점 만점)</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-gray-50 border-b-2 border-gray-200">
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">기간</th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">가점</th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">기간</th>
-                    <th className="px-4 py-3 text-left font-semibold text-gray-700">가점</th>
+                  <tr className="bg-bg-secondary border-b border-border">
+                    <th className="px-4 py-3 text-left text-[13px] font-medium text-fg-secondary">기간</th>
+                    <th className="px-4 py-3 text-left text-[13px] font-medium text-fg-secondary">가점</th>
+                    <th className="px-4 py-3 text-left text-[13px] font-medium text-fg-secondary">기간</th>
+                    <th className="px-4 py-3 text-left text-[13px] font-medium text-fg-secondary">가점</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr className="border-b border-gray-200 hover:bg-blue-50">
-                    <td className="px-4 py-3">6개월 미만</td>
-                    <td className="px-4 py-3 font-medium">1점</td>
-                    <td className="px-4 py-3">9~10년</td>
-                    <td className="px-4 py-3 font-medium">11점</td>
+                  <tr className="border-b border-border hover:bg-surface-hover">
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">6개월 미만</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">1점</td>
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">9~10년</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">11점</td>
                   </tr>
-                  <tr className="border-b border-gray-200 hover:bg-blue-50">
-                    <td className="px-4 py-3">6개월~1년</td>
-                    <td className="px-4 py-3 font-medium">2점</td>
-                    <td className="px-4 py-3">10~11년</td>
-                    <td className="px-4 py-3 font-medium">12점</td>
+                  <tr className="border-b border-border hover:bg-surface-hover">
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">6개월~1년</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">2점</td>
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">10~11년</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">12점</td>
                   </tr>
-                  <tr className="border-b border-gray-200 hover:bg-blue-50">
-                    <td className="px-4 py-3">1~2년</td>
-                    <td className="px-4 py-3 font-medium">3점</td>
-                    <td className="px-4 py-3">11~12년</td>
-                    <td className="px-4 py-3 font-medium">13점</td>
+                  <tr className="border-b border-border hover:bg-surface-hover">
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">1~2년</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">3점</td>
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">11~12년</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">13점</td>
                   </tr>
-                  <tr className="border-b border-gray-200 hover:bg-blue-50">
-                    <td className="px-4 py-3">2~3년</td>
-                    <td className="px-4 py-3 font-medium">4점</td>
-                    <td className="px-4 py-3">12~13년</td>
-                    <td className="px-4 py-3 font-medium">14점</td>
+                  <tr className="border-b border-border hover:bg-surface-hover">
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">2~3년</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">4점</td>
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">12~13년</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">14점</td>
                   </tr>
-                  <tr className="border-b border-gray-200 hover:bg-blue-50">
-                    <td className="px-4 py-3">3~4년</td>
-                    <td className="px-4 py-3 font-medium">5점</td>
-                    <td className="px-4 py-3">13~14년</td>
-                    <td className="px-4 py-3 font-medium">15점</td>
+                  <tr className="border-b border-border hover:bg-surface-hover">
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">3~4년</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">5점</td>
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">13~14년</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">15점</td>
                   </tr>
-                  <tr className="border-b border-gray-200 hover:bg-blue-50">
-                    <td className="px-4 py-3">4~5년</td>
-                    <td className="px-4 py-3 font-medium">6점</td>
-                    <td className="px-4 py-3">14~15년</td>
-                    <td className="px-4 py-3 font-medium">16점</td>
+                  <tr className="border-b border-border hover:bg-surface-hover">
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">4~5년</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">6점</td>
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">14~15년</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">16점</td>
                   </tr>
-                  <tr className="border-b border-gray-200 hover:bg-blue-50">
-                    <td className="px-4 py-3">5~6년</td>
-                    <td className="px-4 py-3 font-medium">7점</td>
-                    <td className="px-4 py-3">15년 이상</td>
-                    <td className="px-4 py-3 font-medium">17점</td>
+                  <tr className="border-b border-border hover:bg-surface-hover">
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">5~6년</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">7점</td>
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">15년 이상</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">17점</td>
                   </tr>
-                  <tr className="border-b border-gray-200 hover:bg-blue-50">
-                    <td className="px-4 py-3">6~7년</td>
-                    <td className="px-4 py-3 font-medium">8점</td>
+                  <tr className="border-b border-border hover:bg-surface-hover">
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">6~7년</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">8점</td>
                     <td></td>
                     <td></td>
                   </tr>
-                  <tr className="border-b border-gray-200 hover:bg-blue-50">
-                    <td className="px-4 py-3">7~8년</td>
-                    <td className="px-4 py-3 font-medium">9점</td>
+                  <tr className="border-b border-border hover:bg-surface-hover">
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">7~8년</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">9점</td>
                     <td></td>
                     <td></td>
                   </tr>
-                  <tr className="hover:bg-blue-50">
-                    <td className="px-4 py-3">8~9년</td>
-                    <td className="px-4 py-3 font-medium">10점</td>
+                  <tr className="hover:bg-surface-hover">
+                    <td className="px-4 py-3 text-[13px] text-fg-secondary">8~9년</td>
+                    <td className="px-4 py-3 text-[13px] text-fg font-medium">10점</td>
                     <td></td>
                     <td></td>
                   </tr>
@@ -603,37 +602,35 @@ export default function SubscriptionPointsPage() {
         </div>
 
         {/* Tips Section */}
-        <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6 mb-8">
-          <h3 className="font-semibold text-blue-900 mb-4 flex items-center gap-2">
-            <span className="text-xl">💡</span> 알아두기
-          </h3>
-          <ul className="space-y-3 text-sm text-blue-800">
+        <div className="border border-border rounded-xl bg-bg-secondary p-5 mb-8">
+          <h3 className="text-[14px] font-semibold text-fg mb-3">알아두기</h3>
+          <ul className="space-y-3 text-[13px] text-fg-secondary">
             <li className="flex gap-3">
-              <span className="text-blue-600 font-bold">•</span>
+              <span>·</span>
               <span>
                 청약가점은 주택청약 시 당첨 순위를 결정하는 중요한 요소입니다. 최대 84점입니다.
               </span>
             </li>
             <li className="flex gap-3">
-              <span className="text-blue-600 font-bold">•</span>
+              <span>·</span>
               <span>
                 무주택기간은 주택을 소유하지 않은 기간으로, 혼인, 신청인의 나이 등에 따라 달라집니다.
               </span>
             </li>
             <li className="flex gap-3">
-              <span className="text-blue-600 font-bold">•</span>
+              <span>·</span>
               <span>
                 부양가족수는 배우자, 미혼 자녀, 부모님 등 생계를 같이 하는 가족을 포함합니다.
               </span>
             </li>
             <li className="flex gap-3">
-              <span className="text-blue-600 font-bold">•</span>
+              <span>·</span>
               <span>
                 청약통장은 6개월 이상 가입해야 일반 청약에 참가할 수 있습니다.
               </span>
             </li>
             <li className="flex gap-3">
-              <span className="text-blue-600 font-bold">•</span>
+              <span>·</span>
               <span>
                 정확한 가점 계산은 LH 주택청약 시스템에서 확인하시기 바랍니다.
               </span>
@@ -641,6 +638,6 @@ export default function SubscriptionPointsPage() {
           </ul>
         </div>
       </div>
-    </div>
+    </>
   );
 }

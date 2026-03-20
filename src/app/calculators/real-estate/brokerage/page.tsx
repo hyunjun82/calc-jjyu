@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
+import { ChevronRight } from 'lucide-react';
 
 type TransactionType = 'sale' | 'jeonse' | 'monthly';
 
@@ -40,24 +42,50 @@ export default function BrokerageFeeCalculatorPage() {
     let feeLimit = 0;
     let exceedsLimit = false;
 
-    if (baseAmount < 50000000) {
-      feeRate = 0.006;
-      feeLimit = 250000;
-    } else if (baseAmount < 200000000) {
-      feeRate = 0.005;
-      feeLimit = 800000;
-    } else if (baseAmount < 900000000) {
-      feeRate = 0.004;
-      feeLimit = 0; // 상한 없음
-    } else if (baseAmount < 1200000000) {
-      feeRate = 0.005;
-      feeLimit = 0;
-    } else if (baseAmount < 1500000000) {
-      feeRate = 0.006;
-      feeLimit = 0;
+    const isLease = transactionType === 'jeonse' || transactionType === 'monthly';
+
+    if (isLease) {
+      // 임대(전세/월세) 요율표
+      if (baseAmount < 50000000) {
+        feeRate = 0.005;
+        feeLimit = 200000;
+      } else if (baseAmount < 200000000) {
+        feeRate = 0.004;
+        feeLimit = 300000;
+      } else if (baseAmount < 900000000) {
+        feeRate = 0.003;
+        feeLimit = 0;
+      } else if (baseAmount < 1200000000) {
+        feeRate = 0.004;
+        feeLimit = 0;
+      } else if (baseAmount < 1500000000) {
+        feeRate = 0.005;
+        feeLimit = 0;
+      } else {
+        feeRate = 0.006;
+        feeLimit = 0;
+      }
     } else {
-      feeRate = 0.007;
-      feeLimit = 0;
+      // 매매 요율표
+      if (baseAmount < 50000000) {
+        feeRate = 0.006;
+        feeLimit = 250000;
+      } else if (baseAmount < 200000000) {
+        feeRate = 0.005;
+        feeLimit = 800000;
+      } else if (baseAmount < 900000000) {
+        feeRate = 0.004;
+        feeLimit = 0;
+      } else if (baseAmount < 1200000000) {
+        feeRate = 0.005;
+        feeLimit = 0;
+      } else if (baseAmount < 1500000000) {
+        feeRate = 0.006;
+        feeLimit = 0;
+      } else {
+        feeRate = 0.007;
+        feeLimit = 0;
+      }
     }
 
     let fee = baseAmount * feeRate;
@@ -114,45 +142,47 @@ export default function BrokerageFeeCalculatorPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+    <>
       {/* Breadcrumb */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-4 text-sm text-gray-600">
-          <span>홈</span>
-          <span className="mx-2">&gt;</span>
-          <span>부동산</span>
-          <span className="mx-2">&gt;</span>
-          <span className="text-gray-900 font-medium">중개수수료</span>
+      <div className="border-b border-border">
+        <div className="mx-auto max-w-[1200px] px-6 py-4">
+          <nav className="flex items-center gap-1.5 text-[13px] text-fg-muted mb-8">
+            <Link href="/" className="hover:text-fg">홈</Link>
+            <ChevronRight size={12} />
+            <span>부동산</span>
+            <ChevronRight size={12} />
+            <span className="text-fg font-medium">중개수수료</span>
+          </nav>
         </div>
       </div>
 
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="border-b border-border">
+        <div className="mx-auto max-w-[1200px] px-6 py-8">
           <div className="flex items-center gap-3 mb-4">
-            <h1 className="text-3xl font-bold text-gray-900">중개수수료 계산기</h1>
-            <span className="inline-block bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full">
+            <h1 className="text-3xl font-bold text-fg">중개수수료 계산기</h1>
+            <span className="inline-block bg-bg-tertiary text-fg-secondary text-xs font-semibold px-3 py-1 rounded-full">
               부동산
             </span>
           </div>
-          <p className="text-gray-600 text-lg">
+          <p className="text-fg-secondary text-lg">
             2024년 기준 한국 부동산 중개수수료를 정확하게 계산합니다. 매매, 전세, 월세 거래를 지원합니다.
           </p>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="mx-auto max-w-[1200px] px-6 py-8">
         {/* Calculator Card */}
-        <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
-          <div className="bg-gradient-to-r from-blue-50 to-blue-25 px-8 py-6 border-b-2 border-blue-200">
-            <h2 className="text-xl font-bold text-gray-900">계산 정보 입력</h2>
+        <div className="bg-surface rounded-xl shadow-[var(--shadow-md)] overflow-hidden mb-8">
+          <div className="bg-bg-secondary px-8 py-6 border-b border-border">
+            <h2 className="text-[12px] font-medium text-fg-muted uppercase tracking-wider">계산 정보 입력</h2>
           </div>
 
           <div className="p-8">
             {/* Transaction Type */}
             <div className="mb-8">
-              <label className="block text-sm font-semibold text-gray-700 mb-4">
+              <label className="block text-sm font-semibold text-fg-secondary mb-4">
                 거래 유형
               </label>
               <div className="grid grid-cols-3 gap-4">
@@ -166,8 +196,8 @@ export default function BrokerageFeeCalculatorPage() {
                     onClick={() => setTransactionType(option.value)}
                     className={`py-3 px-4 rounded-lg font-semibold transition-all duration-200 ${
                       transactionType === option.value
-                        ? 'bg-blue-500 text-white shadow-lg'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        ? 'bg-accent text-accent-fg'
+                        : 'bg-bg-tertiary text-fg-secondary hover:text-fg hover:bg-surface-active'
                     }`}
                   >
                     {option.label}
@@ -181,7 +211,7 @@ export default function BrokerageFeeCalculatorPage() {
               <>
                 {/* Quick Presets */}
                 <div className="mb-8">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  <label className="block text-sm font-semibold text-fg-secondary mb-3">
                     자주 사용하는 거래금액
                   </label>
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
@@ -191,8 +221,8 @@ export default function BrokerageFeeCalculatorPage() {
                         onClick={() => handlePreset(value)}
                         className={`py-2 px-3 rounded-lg text-sm font-semibold transition-all duration-200 ${
                           amount === value.toString()
-                            ? 'bg-blue-500 text-white shadow-lg'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-accent text-accent-fg'
+                            : 'bg-bg-tertiary text-fg-secondary hover:text-fg hover:bg-surface-active'
                         }`}
                       >
                         {formatNumber(value)}원
@@ -203,7 +233,7 @@ export default function BrokerageFeeCalculatorPage() {
 
                 {/* Amount Input */}
                 <div className="mb-8">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-fg-secondary mb-2">
                     거래금액 (원)
                   </label>
                   <input
@@ -211,7 +241,7 @@ export default function BrokerageFeeCalculatorPage() {
                     value={formatNumber(parseFloat(amount) || 0)}
                     onChange={handleAmountChange}
                     placeholder="금액을 입력하세요"
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-lg"
+                    className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg placeholder:text-fg-muted outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
                   />
                 </div>
               </>
@@ -221,7 +251,7 @@ export default function BrokerageFeeCalculatorPage() {
             {transactionType === 'monthly' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-fg-secondary mb-2">
                     보증금 (원)
                   </label>
                   <input
@@ -229,12 +259,12 @@ export default function BrokerageFeeCalculatorPage() {
                     value={formatNumber(parseFloat(deposit) || 0)}
                     onChange={handleDepositChange}
                     placeholder="보증금을 입력하세요"
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-lg"
+                    className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg placeholder:text-fg-muted outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-fg-secondary mb-2">
                     월세 (원)
                   </label>
                   <input
@@ -242,23 +272,23 @@ export default function BrokerageFeeCalculatorPage() {
                     value={formatNumber(parseFloat(monthlyRent) || 0)}
                     onChange={handleMonthlyChange}
                     placeholder="월세를 입력하세요"
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-lg"
+                    className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg placeholder:text-fg-muted outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
                   />
                 </div>
               </div>
             )}
 
             {/* Calculate Button */}
-            <button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg">
+            <button className="w-full bg-accent hover:bg-accent-hover text-accent-fg font-bold py-3 px-6 rounded-lg transition-all duration-200">
               계산하기
             </button>
           </div>
         </div>
 
         {/* Results */}
-        <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
-          <div className="bg-gradient-to-r from-green-50 to-green-25 px-8 py-6 border-b-2 border-green-200">
-            <h2 className="text-xl font-bold text-gray-900">계산 결과</h2>
+        <div className="bg-surface rounded-xl shadow-[var(--shadow-md)] overflow-hidden mb-8">
+          <div className="bg-bg-secondary px-8 py-6 border-b border-border">
+            <h2 className="text-[12px] font-medium text-fg-muted uppercase tracking-wider">계산 결과</h2>
           </div>
 
           <div className="p-8">
@@ -266,100 +296,158 @@ export default function BrokerageFeeCalculatorPage() {
               <>
                 {/* Base Amount */}
                 {transactionType !== 'monthly' && (
-                  <div className="flex justify-between items-center py-4 border-b border-gray-200">
-                    <span className="text-gray-700 font-medium">거래금액</span>
-                    <span className="text-xl font-bold text-gray-900">
+                  <div className="flex justify-between items-center py-4 border-b border-border">
+                    <span className="text-[13px] text-fg-secondary font-medium">거래금액</span>
+                    <span className="text-xl font-bold text-fg">
                       {formatCurrency(result.baseAmount)}
                     </span>
                   </div>
                 )}
 
                 {/* Fee */}
-                <div className="flex justify-between items-center py-4 border-b border-gray-200">
-                  <span className="text-gray-700 font-medium">중개수수료</span>
-                  <span className="text-xl font-bold text-blue-600">
+                <div className="flex justify-between items-center py-4 border-b border-border">
+                  <span className="text-[13px] text-fg-secondary font-medium">중개수수료</span>
+                  <span className="text-xl font-bold text-fg">
                     {formatCurrency(result.fee)}
                   </span>
                 </div>
 
                 {/* Tax */}
-                <div className="flex justify-between items-center py-4 border-b border-gray-200">
-                  <span className="text-gray-700 font-medium">부가세 (10%)</span>
-                  <span className="text-lg font-semibold text-gray-900">
+                <div className="flex justify-between items-center py-4 border-b border-border">
+                  <span className="text-[13px] text-fg-secondary font-medium">부가세 (10%)</span>
+                  <span className="text-lg font-semibold text-fg">
                     {formatCurrency(result.tax)}
                   </span>
                 </div>
 
                 {/* Total */}
-                <div className="flex justify-between items-center py-4 bg-blue-50 -mx-8 px-8 rounded-b-lg">
-                  <span className="text-gray-900 font-bold text-lg">합계</span>
-                  <span className="text-3xl font-bold text-blue-600">
+                <div className="flex justify-between items-center bg-bg-secondary p-4 rounded-xl -mx-4 mt-4">
+                  <span className="text-fg font-bold text-lg">합계</span>
+                  <span className="text-[36px] font-bold text-fg tabular-nums">
                     {formatCurrency(result.total)}
                   </span>
                 </div>
 
+                {/* VAT Notice */}
+                <div className="mt-6 border border-border rounded-xl bg-bg-secondary p-5">
+                  <p className="text-[13px] text-fg-secondary">
+                    개업공인중개사가 일반과세자인 경우 부가세 10%가 추가됩니다.
+                  </p>
+                </div>
+
                 {/* Note */}
                 {result.note && (
-                  <div className="mt-6 p-4 bg-amber-50 border-l-4 border-amber-400 rounded">
-                    <p className="text-sm text-amber-800">
+                  <div className="mt-4 border border-border rounded-xl bg-bg-secondary p-5">
+                    <p className="text-[13px] text-fg-secondary">
                       <strong>참고:</strong> {result.note}
                     </p>
                   </div>
                 )}
               </>
             ) : (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-fg-muted">
                 거래금액을 입력하고 계산하기를 클릭하세요.
               </div>
             )}
           </div>
         </div>
 
-        {/* Fee Rate Table */}
-        <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
-          <div className="bg-gradient-to-r from-gray-50 to-gray-25 px-8 py-6 border-b-2 border-gray-200">
-            <h2 className="text-xl font-bold text-gray-900">2024년 중개수수료 기준</h2>
+        {/* Fee Rate Table - 매매 */}
+        <div className="bg-surface rounded-xl shadow-[var(--shadow-md)] overflow-hidden mb-8">
+          <div className="bg-bg-secondary px-8 py-6 border-b border-border">
+            <h2 className="text-[12px] font-medium text-fg-muted uppercase tracking-wider">매매 중개수수료 요율표 (2021.10 개정)</h2>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="bg-gray-50 border-b-2 border-gray-200">
-                  <th className="px-8 py-4 text-left font-semibold text-gray-700">거래금액</th>
-                  <th className="px-8 py-4 text-left font-semibold text-gray-700">수수료율</th>
-                  <th className="px-8 py-4 text-left font-semibold text-gray-700">상한</th>
+                <tr className="bg-bg-secondary border-b border-border">
+                  <th className="px-8 py-4 text-left text-[13px] font-medium text-fg-secondary">거래금액</th>
+                  <th className="px-8 py-4 text-left text-[13px] font-medium text-fg-secondary">상한요율</th>
+                  <th className="px-8 py-4 text-left text-[13px] font-medium text-fg-secondary">한도</th>
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b border-gray-200 hover:bg-blue-50">
-                  <td className="px-8 py-4 text-gray-700">5천만원 미만</td>
-                  <td className="px-8 py-4 text-gray-700 font-medium">0.6%</td>
-                  <td className="px-8 py-4 text-gray-700 font-medium">25만원</td>
+                <tr className="border-b border-border hover:bg-surface-hover">
+                  <td className="px-8 py-4 text-[13px] text-fg-secondary">5천만원 미만</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">0.6%</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">25만원</td>
                 </tr>
-                <tr className="border-b border-gray-200 hover:bg-blue-50">
-                  <td className="px-8 py-4 text-gray-700">5천만원 ~ 2억원 미만</td>
-                  <td className="px-8 py-4 text-gray-700 font-medium">0.5%</td>
-                  <td className="px-8 py-4 text-gray-700 font-medium">80만원</td>
+                <tr className="border-b border-border hover:bg-surface-hover">
+                  <td className="px-8 py-4 text-[13px] text-fg-secondary">5천만원 ~ 2억원 미만</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">0.5%</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">80만원</td>
                 </tr>
-                <tr className="border-b border-gray-200 hover:bg-blue-50">
-                  <td className="px-8 py-4 text-gray-700">2억원 ~ 9억원 미만</td>
-                  <td className="px-8 py-4 text-gray-700 font-medium">0.4%</td>
-                  <td className="px-8 py-4 text-gray-700 font-medium">상한 없음</td>
+                <tr className="border-b border-border hover:bg-surface-hover">
+                  <td className="px-8 py-4 text-[13px] text-fg-secondary">2억원 ~ 9억원 미만</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">0.4%</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">없음</td>
                 </tr>
-                <tr className="border-b border-gray-200 hover:bg-blue-50">
-                  <td className="px-8 py-4 text-gray-700">9억원 ~ 12억원 미만</td>
-                  <td className="px-8 py-4 text-gray-700 font-medium">0.5%</td>
-                  <td className="px-8 py-4 text-gray-700 font-medium">상한 없음</td>
+                <tr className="border-b border-border hover:bg-surface-hover">
+                  <td className="px-8 py-4 text-[13px] text-fg-secondary">9억원 ~ 12억원 미만</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">0.5%</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">없음</td>
                 </tr>
-                <tr className="border-b border-gray-200 hover:bg-blue-50">
-                  <td className="px-8 py-4 text-gray-700">12억원 ~ 15억원 미만</td>
-                  <td className="px-8 py-4 text-gray-700 font-medium">0.6%</td>
-                  <td className="px-8 py-4 text-gray-700 font-medium">상한 없음</td>
+                <tr className="border-b border-border hover:bg-surface-hover">
+                  <td className="px-8 py-4 text-[13px] text-fg-secondary">12억원 ~ 15억원 미만</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">0.6%</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">없음</td>
                 </tr>
-                <tr className="hover:bg-blue-50">
-                  <td className="px-8 py-4 text-gray-700">15억원 이상</td>
-                  <td className="px-8 py-4 text-gray-700 font-medium">0.7%</td>
-                  <td className="px-8 py-4 text-gray-700 font-medium">상한 없음</td>
+                <tr className="hover:bg-surface-hover">
+                  <td className="px-8 py-4 text-[13px] text-fg-secondary">15억원 이상</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">0.7%</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">없음</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Fee Rate Table - 임대 */}
+        <div className="bg-surface rounded-xl shadow-[var(--shadow-md)] overflow-hidden mb-8">
+          <div className="bg-bg-secondary px-8 py-6 border-b border-border">
+            <h2 className="text-[12px] font-medium text-fg-muted uppercase tracking-wider">임대(전세/월세) 중개수수료 요율표 (2021.10 개정)</h2>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-bg-secondary border-b border-border">
+                  <th className="px-8 py-4 text-left text-[13px] font-medium text-fg-secondary">거래금액</th>
+                  <th className="px-8 py-4 text-left text-[13px] font-medium text-fg-secondary">상한요율</th>
+                  <th className="px-8 py-4 text-left text-[13px] font-medium text-fg-secondary">한도</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-border hover:bg-surface-hover">
+                  <td className="px-8 py-4 text-[13px] text-fg-secondary">5천만원 미만</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">0.5%</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">20만원</td>
+                </tr>
+                <tr className="border-b border-border hover:bg-surface-hover">
+                  <td className="px-8 py-4 text-[13px] text-fg-secondary">5천만원 ~ 2억원 미만</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">0.4%</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">30만원</td>
+                </tr>
+                <tr className="border-b border-border hover:bg-surface-hover">
+                  <td className="px-8 py-4 text-[13px] text-fg-secondary">2억원 ~ 9억원 미만</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">0.3%</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">없음</td>
+                </tr>
+                <tr className="border-b border-border hover:bg-surface-hover">
+                  <td className="px-8 py-4 text-[13px] text-fg-secondary">9억원 ~ 12억원 미만</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">0.4%</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">없음</td>
+                </tr>
+                <tr className="border-b border-border hover:bg-surface-hover">
+                  <td className="px-8 py-4 text-[13px] text-fg-secondary">12억원 ~ 15억원 미만</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">0.5%</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">없음</td>
+                </tr>
+                <tr className="hover:bg-surface-hover">
+                  <td className="px-8 py-4 text-[13px] text-fg-secondary">15억원 이상</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">0.6%</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">없음</td>
                 </tr>
               </tbody>
             </table>
@@ -367,31 +455,29 @@ export default function BrokerageFeeCalculatorPage() {
         </div>
 
         {/* Tips Section */}
-        <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6 mb-8">
-          <h3 className="font-semibold text-blue-900 mb-4 flex items-center gap-2">
-            <span className="text-xl">💡</span> 알아두기
-          </h3>
-          <ul className="space-y-3 text-sm text-blue-800">
+        <div className="border border-border rounded-xl bg-bg-secondary p-5 mb-8">
+          <h3 className="text-[14px] font-semibold text-fg mb-3">알아두기</h3>
+          <ul className="space-y-3 text-[13px] text-fg-secondary">
             <li className="flex gap-3">
-              <span className="text-blue-600 font-bold">•</span>
+              <span>·</span>
               <span>
                 중개수수료는 거래금액의 일정 비율로 계산되며, 부가가치세(VAT 10%)가 추가됩니다.
               </span>
             </li>
             <li className="flex gap-3">
-              <span className="text-blue-600 font-bold">•</span>
+              <span>·</span>
               <span>
-                <strong>월세의 경우</strong>, 거래금액은 보증금 + (월세 × 100) 또는 보증금 + (월세 × 70)으로 계산됩니다.
+                <strong>월세의 경우</strong>, 거래금액은 보증금 + (월세 x 100) 또는 보증금 + (월세 x 70)으로 계산됩니다.
               </span>
             </li>
             <li className="flex gap-3">
-              <span className="text-blue-600 font-bold">•</span>
+              <span>·</span>
               <span>
                 상한요율을 초과하는 경우 상한가가 적용되어 더 저렴할 수 있습니다.
               </span>
             </li>
             <li className="flex gap-3">
-              <span className="text-blue-600 font-bold">•</span>
+              <span>·</span>
               <span>
                 실제 거래 시 중개업소와 협의하여 수수료율이 결정될 수 있으므로 참고만 하세요.
               </span>
@@ -399,6 +485,6 @@ export default function BrokerageFeeCalculatorPage() {
           </ul>
         </div>
       </div>
-    </div>
+    </>
   );
 }

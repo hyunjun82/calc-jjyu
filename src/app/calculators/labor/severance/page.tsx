@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { ChevronRight } from 'lucide-react';
 
 interface SeveranceResult {
   startDate: string;
@@ -78,280 +79,253 @@ export default function SeveranceCalculator() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="mx-auto max-w-[1200px] px-6 py-8 md:py-12">
       {/* Breadcrumb */}
-      <div className="bg-white border-b border-slate-200">
-        <div className="max-w-4xl mx-auto px-4 py-4 text-sm text-slate-600">
-          <Link href="/" className="hover:text-blue-600">
-            홈
-          </Link>
-          <span className="mx-2">/</span>
-          <Link href="/calculators" className="hover:text-blue-600">
-            근로 계산기
-          </Link>
-          <span className="mx-2">/</span>
-          <span className="text-slate-900 font-medium">퇴직금 계산기</span>
-        </div>
+      <nav className="flex items-center gap-1.5 text-[13px] text-fg-muted mb-8">
+        <Link href="/" className="hover:text-fg transition-colors">홈</Link>
+        <ChevronRight size={12} />
+        <span className="text-fg-secondary">근로 계산기</span>
+        <ChevronRight size={12} />
+        <span className="text-fg font-medium">퇴직금 계산기</span>
+      </nav>
+
+      {/* Title */}
+      <div className="mb-8">
+        <h1 className="text-[28px] md:text-[36px] font-bold text-fg tracking-tight mb-3">퇴직금 계산기</h1>
+        <p className="text-[15px] text-fg-secondary">
+          입사일과 퇴사일을 기준으로 퇴직금을 정확하게 계산해보세요.
+        </p>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Title */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-3">
-            <h1 className="text-3xl font-bold text-slate-900">퇴직금 계산기</h1>
-            <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm font-medium">
-              근로
-            </span>
-          </div>
-          <p className="text-slate-600">
-            입사일과 퇴사일을 기준으로 퇴직금을 정확하게 계산해보세요.
-          </p>
-        </div>
+      <div className="grid gap-8 lg:grid-cols-3">
+        {/* Form */}
+        <div className="lg:col-span-1">
+          <div className="border border-border rounded-2xl bg-surface p-6 sticky top-20">
+            <h2 className="text-[16px] font-semibold text-fg mb-5">계산 설정</h2>
 
-        <div className="grid gap-8 lg:grid-cols-3">
-          {/* Form */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-md p-6 sticky top-4">
-              <h2 className="text-lg font-semibold text-slate-900 mb-4">계산 설정</h2>
-
-              <div className="space-y-4">
-                {/* 입사일 */}
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                    입사일 <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                {/* 퇴사일 */}
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                    퇴사일 <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                {/* 최근 3개월 임금총액 */}
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                    최근 3개월 임금총액 <span className="text-red-500">*</span>
-                  </label>
-                  <div className="flex items-center">
-                    <input
-                      type="number"
-                      value={last3MonthsWages}
-                      onChange={(e) => setLast3MonthsWages(Number(e.target.value))}
-                      className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-sm text-slate-600">원</span>
-                  </div>
-                  <p className="text-xs text-slate-500 mt-1">
-                    {last3MonthsWages.toLocaleString('ko-KR')} 원
-                  </p>
-                </div>
-
-                {/* 최근 3개월 상여금 */}
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                    최근 3개월 상여금 (연간기준)
-                  </label>
-                  <div className="flex items-center">
-                    <input
-                      type="number"
-                      value={bonus3Months}
-                      onChange={(e) => setBonus3Months(Number(e.target.value))}
-                      className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-sm text-slate-600">원</span>
-                  </div>
-                  <p className="text-xs text-slate-500 mt-1">
-                    {bonus3Months.toLocaleString('ko-KR')} 원
-                  </p>
-                </div>
-
-                {/* 연차수당 */}
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
-                    미사용 연차수당 (연간기준)
-                  </label>
-                  <div className="flex items-center">
-                    <input
-                      type="number"
-                      value={annualLeave}
-                      onChange={(e) => setAnnualLeave(Number(e.target.value))}
-                      className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-sm text-slate-600">원</span>
-                  </div>
-                  <p className="text-xs text-slate-500 mt-1">
-                    {annualLeave.toLocaleString('ko-KR')} 원
-                  </p>
-                </div>
-
-                <button
-                  onClick={handleCalculate}
-                  className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition"
-                >
-                  계산하기
-                </button>
+            <div className="space-y-4">
+              {/* 입사일 */}
+              <div>
+                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
+                  입사일 <span className="text-negative">*</span>
+                </label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
+                />
               </div>
+
+              {/* 퇴사일 */}
+              <div>
+                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
+                  퇴사일 <span className="text-negative">*</span>
+                </label>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
+                />
+              </div>
+
+              {/* 최근 3개월 임금총액 */}
+              <div>
+                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
+                  최근 3개월 임금총액 <span className="text-negative">*</span>
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    value={last3MonthsWages}
+                    onChange={(e) => setLast3MonthsWages(Number(e.target.value))}
+                    className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
+                  />
+                  <span className="text-[13px] text-fg-muted">원</span>
+                </div>
+                <p className="text-[12px] text-fg-muted mt-1.5">
+                  {last3MonthsWages.toLocaleString('ko-KR')} 원
+                </p>
+              </div>
+
+              {/* 최근 3개월 상여금 */}
+              <div>
+                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
+                  최근 3개월 상여금 (연간기준)
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    value={bonus3Months}
+                    onChange={(e) => setBonus3Months(Number(e.target.value))}
+                    className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
+                  />
+                  <span className="text-[13px] text-fg-muted">원</span>
+                </div>
+                <p className="text-[12px] text-fg-muted mt-1.5">
+                  {bonus3Months.toLocaleString('ko-KR')} 원
+                </p>
+              </div>
+
+              {/* 연차수당 */}
+              <div>
+                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
+                  미사용 연차수당 (연간기준)
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    value={annualLeave}
+                    onChange={(e) => setAnnualLeave(Number(e.target.value))}
+                    className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
+                  />
+                  <span className="text-[13px] text-fg-muted">원</span>
+                </div>
+                <p className="text-[12px] text-fg-muted mt-1.5">
+                  {annualLeave.toLocaleString('ko-KR')} 원
+                </p>
+              </div>
+
+              <button
+                onClick={handleCalculate}
+                className="w-full h-11 bg-accent hover:bg-accent-hover text-accent-fg font-medium rounded-xl transition-colors"
+              >
+                계산하기
+              </button>
             </div>
           </div>
+        </div>
 
-          {/* Results */}
-          <div className="lg:col-span-2">
-            {result && (
-              <div className="space-y-6">
-                {/* Eligibility Alert */}
-                <div
-                  className={`rounded-lg p-4 border ${
-                    result.isEligible
-                      ? 'bg-green-50 border-green-200'
-                      : 'bg-yellow-50 border-yellow-200'
-                  }`}
-                >
-                  <p
-                    className={`text-sm font-medium ${
-                      result.isEligible ? 'text-green-800' : 'text-yellow-800'
-                    }`}
-                  >
-                    {result.isEligible ? '✓' : '⚠'} {result.eligibilityMessage}
+        {/* Results */}
+        <div className="lg:col-span-2">
+          {result && (
+            <div className="space-y-6">
+              {/* Eligibility Alert */}
+              <div className="border border-border bg-bg-secondary rounded-xl p-4">
+                <p className="text-[13px] font-medium text-fg">
+                  {result.isEligible ? '✓' : '⚠'} {result.eligibilityMessage}
+                </p>
+              </div>
+
+              {/* Summary Cards */}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="border border-border rounded-xl bg-surface p-4">
+                  <p className="text-[13px] text-fg-secondary mb-1">재직기간</p>
+                  <p className="text-[22px] font-bold text-fg tabular-nums">
+                    {Math.floor(result.employmentYears)}년 {Math.floor((result.employmentYears % 1) * 12)}개월
+                  </p>
+                  <p className="text-[12px] text-fg-muted mt-1">
+                    {result.employmentDays}일
                   </p>
                 </div>
 
-                {/* Summary Cards */}
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="bg-white rounded-lg shadow-md p-4">
-                    <p className="text-sm text-slate-600 mb-1">재직기간</p>
-                    <p className="text-2xl font-bold text-slate-900">
-                      {Math.floor(result.employmentYears)}년 {Math.floor((result.employmentYears % 1) * 12)}개월
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1">
-                      {result.employmentDays}일
-                    </p>
-                  </div>
-
-                  <div className="bg-white rounded-lg shadow-md p-4">
-                    <p className="text-sm text-slate-600 mb-1">1일 평균임금</p>
-                    <p className="text-2xl font-bold text-slate-900">
-                      {result.dailyAverageWage.toLocaleString('ko-KR', {
-                        maximumFractionDigits: 0,
-                      })}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1">원</p>
-                  </div>
-
-                  <div className="bg-white rounded-lg shadow-md p-4">
-                    <p className="text-sm text-slate-600 mb-1">3개월 임금총액</p>
-                    <p className="text-lg font-bold text-slate-900">
-                      {result.last3MonthsWages.toLocaleString('ko-KR', {
-                        maximumFractionDigits: 0,
-                      })}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1">원</p>
-                  </div>
-
-                  <div className="bg-white rounded-lg shadow-md p-4">
-                    <p className="text-sm text-slate-600 mb-1">추가 포함항목</p>
-                    <p className="text-sm font-semibold text-slate-900 mt-2">
-                      상여금 비례: {result.bonus3MonthsProportion.toLocaleString('ko-KR', {
-                        maximumFractionDigits: 0,
-                      })}원
-                    </p>
-                    <p className="text-sm font-semibold text-slate-900 mt-1">
-                      연차수당 비례: {result.annualLeaveProportion.toLocaleString('ko-KR', {
-                        maximumFractionDigits: 0,
-                      })}원
-                    </p>
-                  </div>
-                </div>
-
-                {/* Main Result */}
-                <div
-                  className={`rounded-lg border p-6 ${
-                    result.isEligible
-                      ? 'bg-gradient-to-r from-green-50 to-green-100 border-green-200'
-                      : 'bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200'
-                  }`}
-                >
-                  <p className="text-sm text-slate-600 mb-2">퇴직금</p>
-                  <p className="text-4xl font-bold text-green-600">
-                    {result.severancePay.toLocaleString('ko-KR', {
+                <div className="border border-border rounded-xl bg-surface p-4">
+                  <p className="text-[13px] text-fg-secondary mb-1">1일 평균임금</p>
+                  <p className="text-[22px] font-bold text-fg tabular-nums">
+                    {result.dailyAverageWage.toLocaleString('ko-KR', {
                       maximumFractionDigits: 0,
                     })}
                   </p>
-                  <p className="text-xs text-slate-500 mt-2">
-                    = 1일 평균임금({result.dailyAverageWage.toLocaleString('ko-KR', {
+                  <p className="text-[12px] text-fg-muted mt-1">원</p>
+                </div>
+
+                <div className="border border-border rounded-xl bg-surface p-4">
+                  <p className="text-[13px] text-fg-secondary mb-1">3개월 임금총액</p>
+                  <p className="text-[22px] font-bold text-fg tabular-nums">
+                    {result.last3MonthsWages.toLocaleString('ko-KR', {
                       maximumFractionDigits: 0,
-                    })}원) × 30일 × (재직일수/365)
+                    })}
+                  </p>
+                  <p className="text-[12px] text-fg-muted mt-1">원</p>
+                </div>
+
+                <div className="border border-border rounded-xl bg-surface p-4">
+                  <p className="text-[13px] text-fg-secondary mb-1">추가 포함항목</p>
+                  <p className="text-[13px] font-semibold text-fg mt-2 tabular-nums">
+                    상여금 비례: {result.bonus3MonthsProportion.toLocaleString('ko-KR', {
+                      maximumFractionDigits: 0,
+                    })}원
+                  </p>
+                  <p className="text-[13px] font-semibold text-fg mt-1 tabular-nums">
+                    연차수당 비례: {result.annualLeaveProportion.toLocaleString('ko-KR', {
+                      maximumFractionDigits: 0,
+                    })}원
                   </p>
                 </div>
+              </div>
 
-                {/* Calculation Breakdown */}
-                <div className="bg-white rounded-lg shadow-md p-6">
-                  <h3 className="text-lg font-semibold text-slate-900 mb-4">계산 과정</h3>
-                  <div className="space-y-3 text-sm">
-                    <div className="flex justify-between items-center pb-3 border-b border-slate-200">
-                      <span className="text-slate-700">입사일</span>
-                      <span className="font-semibold text-slate-900">{result.startDate}</span>
-                    </div>
-                    <div className="flex justify-between items-center pb-3 border-b border-slate-200">
-                      <span className="text-slate-700">퇴사일</span>
-                      <span className="font-semibold text-slate-900">{result.endDate}</span>
-                    </div>
-                    <div className="flex justify-between items-center pb-3 border-b border-slate-200">
-                      <span className="text-slate-700">재직일수</span>
-                      <span className="font-semibold text-slate-900">
-                        {result.employmentDays}일
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center pb-3 border-b border-slate-200">
-                      <span className="text-slate-700">3개월 임금 기준액</span>
-                      <span className="font-semibold text-slate-900">
-                        {result.totalWagesBase.toLocaleString('ko-KR', {
-                          maximumFractionDigits: 0,
-                        })}원
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center pt-3">
-                      <span className="text-slate-700 font-semibold">퇴직금</span>
-                      <span className="font-bold text-green-600 text-lg">
-                        {result.severancePay.toLocaleString('ko-KR', {
-                          maximumFractionDigits: 0,
-                        })}원
-                      </span>
-                    </div>
+              {/* Main Result */}
+              <div className="border border-border rounded-xl bg-bg-secondary p-5">
+                <p className="text-[13px] text-fg-secondary mb-1">퇴직금</p>
+                <p className="text-[32px] font-bold text-fg tabular-nums">
+                  {result.severancePay.toLocaleString('ko-KR', {
+                    maximumFractionDigits: 0,
+                  })}
+                </p>
+                <p className="text-[12px] text-fg-muted mt-1">
+                  = 1일 평균임금({result.dailyAverageWage.toLocaleString('ko-KR', {
+                    maximumFractionDigits: 0,
+                  })}원) × 30일 × (재직일수/365)
+                </p>
+              </div>
+
+              {/* Calculation Breakdown */}
+              <div className="border border-border rounded-xl bg-surface overflow-hidden">
+                <div className="p-4">
+                  <h3 className="text-[16px] font-semibold text-fg">계산 과정</h3>
+                </div>
+                <div className="px-4 pb-4 space-y-3 text-[13px]">
+                  <div className="flex justify-between items-center pb-3 border-b border-border">
+                    <span className="text-fg-secondary">입사일</span>
+                    <span className="font-semibold text-fg">{result.startDate}</span>
+                  </div>
+                  <div className="flex justify-between items-center pb-3 border-b border-border">
+                    <span className="text-fg-secondary">퇴사일</span>
+                    <span className="font-semibold text-fg">{result.endDate}</span>
+                  </div>
+                  <div className="flex justify-between items-center pb-3 border-b border-border">
+                    <span className="text-fg-secondary">재직일수</span>
+                    <span className="font-semibold text-fg tabular-nums">
+                      {result.employmentDays}일
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center pb-3 border-b border-border">
+                    <span className="text-fg-secondary">3개월 임금 기준액</span>
+                    <span className="font-semibold text-fg tabular-nums">
+                      {result.totalWagesBase.toLocaleString('ko-KR', {
+                        maximumFractionDigits: 0,
+                      })}원
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center pt-3">
+                    <span className="text-fg-secondary font-semibold">퇴직금</span>
+                    <span className="font-bold text-fg text-[16px] tabular-nums">
+                      {result.severancePay.toLocaleString('ko-KR', {
+                        maximumFractionDigits: 0,
+                      })}원
+                    </span>
                   </div>
                 </div>
-
-                {/* Tips */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h3 className="font-semibold text-slate-900 mb-2">💡 팁</h3>
-                  <ul className="text-sm text-slate-700 space-y-1">
-                    <li>• 퇴직금은 <strong>1년 이상 근무</strong>한 근로자에게만 지급됩니다.</li>
-                    <li>
-                      • 1일 평균임금은 최근 3개월 임금, 상여금, 연차수당을 포함하여 계산합니다.
-                    </li>
-                    <li>• 퇴직금 = 1일 평균임금 × 30일 × (재직일수/365)</li>
-                    <li>
-                      • 퇴직금은 소득세 및 지방소득세에서 일부 비과세 대상입니다
-                      (2023년 기준 1,200만원 한도)
-                    </li>
-                  </ul>
-                </div>
               </div>
-            )}
-          </div>
+
+              {/* Tips */}
+              <div className="border border-border rounded-xl bg-bg-secondary p-5">
+                <h3 className="text-[14px] font-semibold text-fg mb-3">팁</h3>
+                <ul className="text-[13px] text-fg-secondary leading-relaxed space-y-1">
+                  <li>· 퇴직금은 <strong>1년 이상 근무</strong>한 근로자에게만 지급됩니다.</li>
+                  <li>
+                    · 1일 평균임금은 최근 3개월 임금, 상여금, 연차수당을 포함하여 계산합니다.
+                  </li>
+                  <li>· 퇴직금 = 1일 평균임금 × 30일 × (재직일수/365)</li>
+                  <li>
+                    · 퇴직금은 소득세 및 지방소득세에서 일부 비과세 대상입니다
+                    (2023년 기준 1,200만원 한도)
+                  </li>
+                </ul>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

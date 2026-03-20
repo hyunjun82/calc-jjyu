@@ -32,10 +32,10 @@ export default function SeveranceCalculator() {
     const start = new Date(startDate);
     const end = new Date(endDate);
 
-    // 재직일수 계산
+    // 재직일수 계산 (퇴직일 포함)
     const employmentDays = Math.floor(
       (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
-    );
+    ) + 1;
     const employmentYears = employmentDays / 365;
 
     // 1일 평균임금 계산
@@ -45,8 +45,10 @@ export default function SeveranceCalculator() {
     const totalWagesBase =
       last3MonthsWages + bonus3MonthsProportion + annualLeaveProportion;
 
-    // 3개월의 일수 (평균 약 90일)
-    const daysIn3Months = 90;
+    // 3개월의 실제 역일수 계산
+    const threeMonthsAgo = new Date(end);
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+    const daysIn3Months = Math.floor((end.getTime() - threeMonthsAgo.getTime()) / (1000 * 60 * 60 * 24));
     const dailyAverageWage = totalWagesBase / daysIn3Months;
 
     // 퇴직금 = 1일 평균임금 × 30일 × (재직일수 / 365)
@@ -319,8 +321,7 @@ export default function SeveranceCalculator() {
                   </li>
                   <li>· 퇴직금 = 1일 평균임금 × 30일 × (재직일수/365)</li>
                   <li>
-                    · 퇴직금은 소득세 및 지방소득세에서 일부 비과세 대상입니다
-                    (2023년 기준 1,200만원 한도)
+                    · 퇴직금에 대한 퇴직소득세는 근속연수공제 등 복잡한 공제 체계가 적용됩니다. 정확한 퇴직소득세는 국세청 홈택스에서 확인하세요.
                   </li>
                 </ul>
               </div>

@@ -33,7 +33,7 @@ export default function SavingsCalculator() {
   }, [taxType]);
 
   const result = useMemo<SavingsResult | null>(() => {
-    if (!monthlyAmount || !annualRate || !duration) return null;
+    if (!monthlyAmount || annualRate === null || annualRate === undefined || !duration) return null;
 
     const totalDeposit = monthlyAmount * duration;
     const monthlyRate = annualRate / 100 / 12;

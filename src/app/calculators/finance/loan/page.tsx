@@ -30,17 +30,18 @@ export default function LoanCalculator() {
   const [showFullSchedule, setShowFullSchedule] = useState(false);
 
   const result = useMemo<LoanResult | null>(() => {
-    if (!loanAmount || !annualRate || !duration) return null;
+    if (!loanAmount || annualRate === null || annualRate === undefined || !duration) return null;
 
     const totalMonths = durationType === 'year' ? duration * 12 : duration;
     const monthlyRate = annualRate / 100 / 12;
 
     if (repaymentType === 'equal-payment') {
       // 원리금균등
-      const monthlyPayment =
-        loanAmount *
-        ((monthlyRate * Math.pow(1 + monthlyRate, totalMonths)) /
-          (Math.pow(1 + monthlyRate, totalMonths) - 1));
+      const monthlyPayment = monthlyRate === 0
+        ? loanAmount / totalMonths
+        : loanAmount *
+          ((monthlyRate * Math.pow(1 + monthlyRate, totalMonths)) /
+            (Math.pow(1 + monthlyRate, totalMonths) - 1));
 
       let balance = loanAmount;
       const schedule: ScheduleItem[] = [];

@@ -50,12 +50,13 @@ export default function ComprehensiveRealPropertyTaxCalculator() {
     }
 
     const fairMarketRatio = 0.6;
-    const taxableStandard = price * fairMarketRatio;
 
     // 세액공제 기준액 결정
     const exemptionAmount = ownerType === 'single' ? 1200000000 : 900000000;
-    let deductibleAmount = taxableStandard - exemptionAmount;
+    let deductibleAmount = (price - exemptionAmount) * fairMarketRatio;
     if (deductibleAmount < 0) deductibleAmount = 0;
+
+    const taxableStandard = price * fairMarketRatio;
 
     const { rate, deduction } = getComprehensiveTaxRate(
       deductibleAmount,
@@ -287,7 +288,7 @@ export default function ComprehensiveRealPropertyTaxCalculator() {
 
           <div className="flex justify-between items-center py-3 border-b border-border">
             <span className="text-[13px] text-fg-secondary">
-              과세표준 (공시가격 x 60%)
+              공시가격 x 60% (참고)
             </span>
             <span className="text-[14px] font-medium text-fg tabular-nums">
               {formatNumber(results.taxableStandard)}원

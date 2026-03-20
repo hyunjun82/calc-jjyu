@@ -57,7 +57,7 @@ export default function InheritanceTaxCalculator() {
     if (hasSpouse === 'yes') {
       const spouse = parseFloat(spouseAmount) || 0;
       // 배우자공제: 법정상속분 한도 내 (최소 5억, 최대 30억)
-      const legalShare = (netInheritance / 2) * (1 / (children + 1));
+      const legalShare = netInheritance * (1.5 / (1.5 + children));
       let spouseShare = spouse > legalShare ? legalShare : spouse;
       spouseDeduction = Math.max(Math.min(spouseShare, 3000000000), 500000000);
     }

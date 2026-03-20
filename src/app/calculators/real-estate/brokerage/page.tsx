@@ -42,24 +42,50 @@ export default function BrokerageFeeCalculatorPage() {
     let feeLimit = 0;
     let exceedsLimit = false;
 
-    if (baseAmount < 50000000) {
-      feeRate = 0.006;
-      feeLimit = 250000;
-    } else if (baseAmount < 200000000) {
-      feeRate = 0.005;
-      feeLimit = 800000;
-    } else if (baseAmount < 900000000) {
-      feeRate = 0.004;
-      feeLimit = 0; // 상한 없음
-    } else if (baseAmount < 1200000000) {
-      feeRate = 0.005;
-      feeLimit = 0;
-    } else if (baseAmount < 1500000000) {
-      feeRate = 0.006;
-      feeLimit = 0;
+    const isLease = transactionType === 'jeonse' || transactionType === 'monthly';
+
+    if (isLease) {
+      // 임대(전세/월세) 요율표
+      if (baseAmount < 50000000) {
+        feeRate = 0.005;
+        feeLimit = 200000;
+      } else if (baseAmount < 200000000) {
+        feeRate = 0.004;
+        feeLimit = 300000;
+      } else if (baseAmount < 900000000) {
+        feeRate = 0.003;
+        feeLimit = 0;
+      } else if (baseAmount < 1200000000) {
+        feeRate = 0.004;
+        feeLimit = 0;
+      } else if (baseAmount < 1500000000) {
+        feeRate = 0.005;
+        feeLimit = 0;
+      } else {
+        feeRate = 0.006;
+        feeLimit = 0;
+      }
     } else {
-      feeRate = 0.007;
-      feeLimit = 0;
+      // 매매 요율표
+      if (baseAmount < 50000000) {
+        feeRate = 0.006;
+        feeLimit = 250000;
+      } else if (baseAmount < 200000000) {
+        feeRate = 0.005;
+        feeLimit = 800000;
+      } else if (baseAmount < 900000000) {
+        feeRate = 0.004;
+        feeLimit = 0;
+      } else if (baseAmount < 1200000000) {
+        feeRate = 0.005;
+        feeLimit = 0;
+      } else if (baseAmount < 1500000000) {
+        feeRate = 0.006;
+        feeLimit = 0;
+      } else {
+        feeRate = 0.007;
+        feeLimit = 0;
+      }
     }
 
     let fee = baseAmount * feeRate;
@@ -302,9 +328,16 @@ export default function BrokerageFeeCalculatorPage() {
                   </span>
                 </div>
 
+                {/* VAT Notice */}
+                <div className="mt-6 border border-border rounded-xl bg-bg-secondary p-5">
+                  <p className="text-[13px] text-fg-secondary">
+                    개업공인중개사가 일반과세자인 경우 부가세 10%가 추가됩니다.
+                  </p>
+                </div>
+
                 {/* Note */}
                 {result.note && (
-                  <div className="mt-6 border border-border rounded-xl bg-bg-secondary p-5">
+                  <div className="mt-4 border border-border rounded-xl bg-bg-secondary p-5">
                     <p className="text-[13px] text-fg-secondary">
                       <strong>참고:</strong> {result.note}
                     </p>
@@ -319,10 +352,10 @@ export default function BrokerageFeeCalculatorPage() {
           </div>
         </div>
 
-        {/* Fee Rate Table */}
+        {/* Fee Rate Table - 매매 */}
         <div className="bg-surface rounded-xl shadow-[var(--shadow-md)] overflow-hidden mb-8">
           <div className="bg-bg-secondary px-8 py-6 border-b border-border">
-            <h2 className="text-[12px] font-medium text-fg-muted uppercase tracking-wider">2024년 중개수수료 기준</h2>
+            <h2 className="text-[12px] font-medium text-fg-muted uppercase tracking-wider">매매 중개수수료 요율표 (2021.10 개정)</h2>
           </div>
 
           <div className="overflow-x-auto">
@@ -330,8 +363,8 @@ export default function BrokerageFeeCalculatorPage() {
               <thead>
                 <tr className="bg-bg-secondary border-b border-border">
                   <th className="px-8 py-4 text-left text-[13px] font-medium text-fg-secondary">거래금액</th>
-                  <th className="px-8 py-4 text-left text-[13px] font-medium text-fg-secondary">수수료율</th>
-                  <th className="px-8 py-4 text-left text-[13px] font-medium text-fg-secondary">상한</th>
+                  <th className="px-8 py-4 text-left text-[13px] font-medium text-fg-secondary">상한요율</th>
+                  <th className="px-8 py-4 text-left text-[13px] font-medium text-fg-secondary">한도</th>
                 </tr>
               </thead>
               <tbody>
@@ -348,22 +381,73 @@ export default function BrokerageFeeCalculatorPage() {
                 <tr className="border-b border-border hover:bg-surface-hover">
                   <td className="px-8 py-4 text-[13px] text-fg-secondary">2억원 ~ 9억원 미만</td>
                   <td className="px-8 py-4 text-[13px] text-fg font-medium">0.4%</td>
-                  <td className="px-8 py-4 text-[13px] text-fg font-medium">상한 없음</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">없음</td>
                 </tr>
                 <tr className="border-b border-border hover:bg-surface-hover">
                   <td className="px-8 py-4 text-[13px] text-fg-secondary">9억원 ~ 12억원 미만</td>
                   <td className="px-8 py-4 text-[13px] text-fg font-medium">0.5%</td>
-                  <td className="px-8 py-4 text-[13px] text-fg font-medium">상한 없음</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">없음</td>
                 </tr>
                 <tr className="border-b border-border hover:bg-surface-hover">
                   <td className="px-8 py-4 text-[13px] text-fg-secondary">12억원 ~ 15억원 미만</td>
                   <td className="px-8 py-4 text-[13px] text-fg font-medium">0.6%</td>
-                  <td className="px-8 py-4 text-[13px] text-fg font-medium">상한 없음</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">없음</td>
                 </tr>
                 <tr className="hover:bg-surface-hover">
                   <td className="px-8 py-4 text-[13px] text-fg-secondary">15억원 이상</td>
                   <td className="px-8 py-4 text-[13px] text-fg font-medium">0.7%</td>
-                  <td className="px-8 py-4 text-[13px] text-fg font-medium">상한 없음</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">없음</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Fee Rate Table - 임대 */}
+        <div className="bg-surface rounded-xl shadow-[var(--shadow-md)] overflow-hidden mb-8">
+          <div className="bg-bg-secondary px-8 py-6 border-b border-border">
+            <h2 className="text-[12px] font-medium text-fg-muted uppercase tracking-wider">임대(전세/월세) 중개수수료 요율표 (2021.10 개정)</h2>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-bg-secondary border-b border-border">
+                  <th className="px-8 py-4 text-left text-[13px] font-medium text-fg-secondary">거래금액</th>
+                  <th className="px-8 py-4 text-left text-[13px] font-medium text-fg-secondary">상한요율</th>
+                  <th className="px-8 py-4 text-left text-[13px] font-medium text-fg-secondary">한도</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-border hover:bg-surface-hover">
+                  <td className="px-8 py-4 text-[13px] text-fg-secondary">5천만원 미만</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">0.5%</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">20만원</td>
+                </tr>
+                <tr className="border-b border-border hover:bg-surface-hover">
+                  <td className="px-8 py-4 text-[13px] text-fg-secondary">5천만원 ~ 2억원 미만</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">0.4%</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">30만원</td>
+                </tr>
+                <tr className="border-b border-border hover:bg-surface-hover">
+                  <td className="px-8 py-4 text-[13px] text-fg-secondary">2억원 ~ 9억원 미만</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">0.3%</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">없음</td>
+                </tr>
+                <tr className="border-b border-border hover:bg-surface-hover">
+                  <td className="px-8 py-4 text-[13px] text-fg-secondary">9억원 ~ 12억원 미만</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">0.4%</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">없음</td>
+                </tr>
+                <tr className="border-b border-border hover:bg-surface-hover">
+                  <td className="px-8 py-4 text-[13px] text-fg-secondary">12억원 ~ 15억원 미만</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">0.5%</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">없음</td>
+                </tr>
+                <tr className="hover:bg-surface-hover">
+                  <td className="px-8 py-4 text-[13px] text-fg-secondary">15억원 이상</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">0.6%</td>
+                  <td className="px-8 py-4 text-[13px] text-fg font-medium">없음</td>
                 </tr>
               </tbody>
             </table>

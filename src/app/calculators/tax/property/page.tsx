@@ -13,14 +13,36 @@ export default function PropertyTaxCalculator() {
     return Math.round(num).toLocaleString('ko-KR');
   };
 
-  const getPropertyTaxRate = (taxableStandard: number): number => {
+  const getPropertyTaxRate = (taxableStandard: number, type: string): number => {
+    if (type === 'building') {
+      // 건물: 0.25% 단일세율
+      return 0.0025;
+    }
+    if (type === 'land') {
+      // 토지(종합합산): 누진세율
+      if (taxableStandard <= 50000000) return 0.002;
+      if (taxableStandard <= 100000000) return 0.003;
+      return 0.005;
+    }
+    // 주택: 4단계 누진세율
     if (taxableStandard <= 60000000) return 0.001;
     if (taxableStandard <= 150000000) return 0.0015;
     if (taxableStandard <= 300000000) return 0.0025;
     return 0.004;
   };
 
-  const getProgressiveDeduction = (taxableStandard: number): number => {
+  const getProgressiveDeduction = (taxableStandard: number, type: string): number => {
+    if (type === 'building') {
+      // 건물: 단일세율이므로 누진공제 없음
+      return 0;
+    }
+    if (type === 'land') {
+      // 토지(종합합산) 누진공제
+      if (taxableStandard <= 50000000) return 0;
+      if (taxableStandard <= 100000000) return 50000;
+      return 250000;
+    }
+    // 주택 누진공제
     if (taxableStandard <= 60000000) return 0;
     if (taxableStandard <= 150000000) return 30000;
     if (taxableStandard <= 300000000) return 180000;
@@ -40,8 +62,8 @@ export default function PropertyTaxCalculator() {
     const taxableStandard = price * fairMarketRatio;
 
     // 재산세
-    const taxRate = getPropertyTaxRate(taxableStandard);
-    const deduction = getProgressiveDeduction(taxableStandard);
+    const taxRate = getPropertyTaxRate(taxableStandard, propertyType);
+    const deduction = getProgressiveDeduction(taxableStandard, propertyType);
     const propertyTax = taxableStandard * taxRate - deduction;
 
     // 도시지역분
@@ -100,6 +122,9 @@ export default function PropertyTaxCalculator() {
             />
             <p className="text-[12px] text-fg-muted mt-1.5">
               국세청에서 고시한 주택의 공시가격
+            </p>
+            <p className="text-[12px] text-fg-muted mt-1">
+              ※ 공정시장가액비율은 매년 정부 고시에 따라 변동될 수 있습니다.
             </p>
           </div>
 

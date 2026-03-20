@@ -36,64 +36,112 @@ export default function SalaryCalculator() {
     if (!annualSalary) return null;
 
     const monthlySalary = annualSalary / 12;
+    const monthlyNonTaxable = nonTaxableAmount;
+    const taxableMonthlySalary = monthlySalary - monthlyNonTaxable;
 
-    // 4대 보험료 계산
+    // 4대 보험료 계산 (과세 급여 기준)
     const pensionRate = 0.045;
-    const pensionMax = 5900000;
-    const nationalPension = Math.min(monthlySalary * pensionRate, pensionMax * pensionRate);
+    const pensionMax = 6170000;
+    const nationalPension = Math.min(taxableMonthlySalary * pensionRate, pensionMax * pensionRate);
 
     const healthInsuranceRate = 0.03545;
-    const healthInsurance = monthlySalary * healthInsuranceRate;
+    const healthInsurance = taxableMonthlySalary * healthInsuranceRate;
 
-    const longTermInsuranceRate = 0.1281;
+    const longTermInsuranceRate = 0.1295;
     const longTermInsurance = healthInsurance * longTermInsuranceRate;
 
     const employmentInsuranceRate = 0.009;
-    const employmentInsurance = monthlySalary * employmentInsuranceRate;
+    const employmentInsurance = taxableMonthlySalary * employmentInsuranceRate;
 
     const totalInsurance =
       nationalPension + healthInsurance + longTermInsurance + employmentInsurance;
 
-    // 근로소득공제 계산
+    // 총급여 = 연봉 - 비과세소득(연간)
+    const annualNonTaxable = monthlyNonTaxable * 12;
+    const grossTaxableIncome = annualSalary - annualNonTaxable;
+
+    // 근로소득공제 계산 (총급여 기준)
     let deduction: number;
-    if (annualSalary <= 5000000) {
-      deduction = annualSalary * 0.7;
-    } else if (annualSalary <= 15000000) {
-      deduction = 3500000 + (annualSalary - 5000000) * 0.4;
-    } else if (annualSalary <= 45000000) {
-      deduction = 7500000 + (annualSalary - 15000000) * 0.15;
-    } else if (annualSalary <= 100000000) {
-      deduction = 12000000 + (annualSalary - 45000000) * 0.05;
+    if (grossTaxableIncome <= 5000000) {
+      deduction = grossTaxableIncome * 0.7;
+    } else if (grossTaxableIncome <= 15000000) {
+      deduction = 3500000 + (grossTaxableIncome - 5000000) * 0.4;
+    } else if (grossTaxableIncome <= 45000000) {
+      deduction = 7500000 + (grossTaxableIncome - 15000000) * 0.15;
+    } else if (grossTaxableIncome <= 100000000) {
+      deduction = 12000000 + (grossTaxableIncome - 45000000) * 0.05;
     } else {
-      deduction = 14750000 + (annualSalary - 100000000) * 0.02;
+      deduction = 14750000 + (grossTaxableIncome - 100000000) * 0.02;
     }
+    deduction = Math.min(deduction, 20000000);
+
+    // 근로소득금액 = 총급여 - 근로소득공제
+    const earnedIncomeAmount = grossTaxableIncome - deduction;
 
     // 인적공제
     const personalDeduction = 1500000 * dependents;
 
-    // 과세표준
-    const monthlyNonTaxable = nonTaxableAmount;
-    const taxableMonthlyIncome = monthlySalary - monthlyNonTaxable - totalInsurance;
-    const annualTaxableIncome = taxableMonthlyIncome * 12;
-    const taxableBase = annualTaxableIncome - deduction - personalDeduction;
+    // 4대보험 본인부담분(연간)
+    const annualInsurance = totalInsurance * 12;
 
-    // 누진세 적용
-    let incomeTax: number;
+    // 과세표준 = 근로소득금액 - 인적공제 - 4대보험 본인부담분(연간)
+    const taxableBase = Math.max(earnedIncomeAmount - personalDeduction - annualInsurance, 0);
+
+    // 누진세 적용 (10억 초과 45% 구간 포함)
+    let calculatedTax: number;
     if (taxableBase <= 14000000) {
-      incomeTax = taxableBase * 0.06;
+      calculatedTax = taxableBase * 0.06;
     } else if (taxableBase <= 50000000) {
-      incomeTax = 840000 + (taxableBase - 14000000) * 0.15;
+      calculatedTax = 840000 + (taxableBase - 14000000) * 0.15;
     } else if (taxableBase <= 88000000) {
-      incomeTax = 6240000 + (taxableBase - 50000000) * 0.24;
+      calculatedTax = 6240000 + (taxableBase - 50000000) * 0.24;
     } else if (taxableBase <= 150000000) {
-      incomeTax = 15360000 + (taxableBase - 88000000) * 0.35;
+      calculatedTax = 15360000 + (taxableBase - 88000000) * 0.35;
     } else if (taxableBase <= 300000000) {
-      incomeTax = 37100000 + (taxableBase - 150000000) * 0.38;
+      calculatedTax = 37100000 + (taxableBase - 150000000) * 0.38;
     } else if (taxableBase <= 500000000) {
-      incomeTax = 94200000 + (taxableBase - 300000000) * 0.4;
+      calculatedTax = 94200000 + (taxableBase - 300000000) * 0.4;
+    } else if (taxableBase <= 1000000000) {
+      calculatedTax = 174200000 + (taxableBase - 500000000) * 0.42;
     } else {
-      incomeTax = 174200000 + (taxableBase - 500000000) * 0.42;
+      calculatedTax = 384200000 + (taxableBase - 1000000000) * 0.45;
     }
+
+    // 근로소득세액공제
+    let earnedIncomeCredit: number;
+    if (calculatedTax <= 1300000) {
+      earnedIncomeCredit = calculatedTax * 0.55;
+    } else {
+      earnedIncomeCredit = 715000 + (calculatedTax - 1300000) * 0.3;
+    }
+    // 한도 적용
+    let creditLimit: number;
+    if (grossTaxableIncome <= 33000000) {
+      creditLimit = 740000;
+    } else if (grossTaxableIncome <= 70000000) {
+      creditLimit = 660000;
+    } else if (grossTaxableIncome <= 120000000) {
+      creditLimit = 500000;
+    } else {
+      creditLimit = 200000;
+    }
+    earnedIncomeCredit = Math.min(earnedIncomeCredit, creditLimit);
+
+    // 표준세액공제 13만원
+    const standardCredit = 130000;
+
+    // 자녀세액공제
+    let childCredit = 0;
+    if (youngChildren === 1) {
+      childCredit = 150000;
+    } else if (youngChildren === 2) {
+      childCredit = 300000;
+    } else if (youngChildren >= 3) {
+      childCredit = 300000 + (youngChildren - 2) * 300000;
+    }
+
+    // 결정세액 = 산출세액 - 근로소득세액공제 - 표준세액공제 - 자녀세액공제
+    const incomeTax = Math.max(calculatedTax - earnedIncomeCredit - standardCredit - childCredit, 0);
 
     // 월 소득세 (연간/12)
     const monthlyIncomeTax = incomeTax / 12;

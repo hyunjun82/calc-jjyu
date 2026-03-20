@@ -33,21 +33,18 @@ export default function CapitalGainsTaxCalculator() {
     holdingYears: number,
     residingYears: number,
     isSingleHouse: boolean,
-    isAdjusted: boolean
+    _isAdjusted: boolean
   ): number => {
-    if (isSingleHouse && !isAdjusted) {
-      // 1세대1주택: 보유 연 4% + 거주 연 4% (최대 80%)
-      const holdingDiscount = Math.min(holdingYears * 4, 40);
-      const residingDiscount = isResiding === 'yes' ? Math.min(residingYears * 4, 40) : 0;
+    if (isSingleHouse) {
+      // 1세대1주택: 보유 3년 이상부터 연 4% (3년=12%, 최대 40%) + 거주 2년 이상부터 연 4% (2년=8%, 최대 40%)
+      const holdingDiscount = holdingYears >= 3 ? Math.min(12 + (holdingYears - 3) * 4, 40) : 0;
+      const residingDiscount = isResiding === 'yes' && residingYears >= 2
+        ? Math.min(8 + (residingYears - 2) * 4, 40)
+        : 0;
       return Math.min(holdingDiscount + residingDiscount, 80);
     }
 
-    if (isAdjusted) {
-      // 조정지역: 장기보유특별공제 없음
-      return 0;
-    }
-
-    // 일반: 3년이상 6%, 매년 2%p 추가 (최대 30%)
+    // 일반(다주택): 3년이상 6%, 매년 2%p 추가 (최대 30%)
     if (holdingYears >= 3) {
       return Math.min(6 + (holdingYears - 3) * 2, 30);
     }
@@ -74,6 +71,13 @@ export default function CapitalGainsTaxCalculator() {
     if (taxableIncome <= 500000000) return 0.40;
     if (taxableIncome <= 1000000000) return 0.42;
     return 0.45;
+  };
+
+  const getProgressiveSurchargeTaxDeduction = (taxableIncome: number, surchargeRate: number): number => {
+    // 중과세율 = 기본세율 + 가산세율로, 각 구간의 누진공제를 재계산
+    // 누진공제 = 직전 구간까지의 (현 구간 세율 - 해당 구간 세율) * 해당 구간 상한
+    // 가산세율은 모든 구간에 동일하게 적용되므로 기본 누진공제와 동일
+    return getProgressiveTaxDeduction(taxableIncome);
   };
 
   const handleCalculate = () => {
@@ -111,12 +115,14 @@ export default function CapitalGainsTaxCalculator() {
     const progressiveDeduction = getProgressiveTaxDeduction(taxableIncome);
     let calculatedTax = taxableIncome * baseTaxRate - progressiveDeduction;
 
-    // 중과세율 적용
-    if (isAdjustedArea === 'yes') {
+    // 중과세율 적용 (조정지역 다주택자: 기본세율 + 20%p/30%p 가산)
+    if (isAdjustedArea === 'yes' && taxableIncome > 0) {
       if (householdCount === '2') {
-        calculatedTax *= 1.2; // +20%p
+        const surchargeRate = 0.20;
+        calculatedTax = taxableIncome * (baseTaxRate + surchargeRate) - getProgressiveSurchargeTaxDeduction(taxableIncome, surchargeRate);
       } else if (householdCount === '3') {
-        calculatedTax *= 1.3; // +30%p
+        const surchargeRate = 0.30;
+        calculatedTax = taxableIncome * (baseTaxRate + surchargeRate) - getProgressiveSurchargeTaxDeduction(taxableIncome, surchargeRate);
       }
     }
 

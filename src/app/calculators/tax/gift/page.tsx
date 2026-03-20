@@ -23,6 +23,10 @@ export default function GiftTaxCalculator() {
         return 50000000; // 직계존속: 5천만원
       case 'child':
         return 50000000; // 직계비속: 5천만원
+      case 'child_minor':
+        return 20000000; // 직계비속 (미성년): 2천만원
+      case 'child_marriage':
+        return 150000000; // 직계비속 (혼인/출산): 1.5억원
       case 'relative':
         return 10000000; // 기타친족: 1천만원
       case 'other':
@@ -126,6 +130,8 @@ export default function GiftTaxCalculator() {
                 { val: 'spouse', label: '배우자 (공제 6억원)' },
                 { val: 'parent', label: '직계존속 (공제 5천만원)' },
                 { val: 'child', label: '직계비속 (공제 5천만원)' },
+                { val: 'child_minor', label: '직계비속 미성년 (공제 2천만원)' },
+                { val: 'child_marriage', label: '직계비속 혼인/출산 (공제 1.5억원)' },
                 { val: 'relative', label: '기타친족 (공제 1천만원)' },
                 { val: 'other', label: '그 외 (공제 없음)' },
               ].map(({ val, label }) => (

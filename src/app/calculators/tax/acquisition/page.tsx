@@ -56,7 +56,8 @@ export default function AcquisitionTaxCalculator() {
     const taxRate = getAcquisitionTaxRate(householdCount, amount, isAdjusted);
     const acquisitionTax = amount * taxRate;
 
-    const ruralSpecialTax = amount * 0.002; // 0.2%
+    // 농특세: 85㎡ 이하 비과세, 85㎡ 초과 취득세의 10%
+    const ruralSpecialTax = houseSize === 'large' ? acquisitionTax * 0.1 : 0;
     const localEducationTax = acquisitionTax * 0.1; // 10%
     const totalTax = acquisitionTax + ruralSpecialTax + localEducationTax;
 
@@ -219,7 +220,7 @@ export default function AcquisitionTaxCalculator() {
           </div>
 
           <div className="flex justify-between items-center py-3 border-b border-border">
-            <span className="text-[13px] text-fg-secondary">농어촌특별세 (0.2%)</span>
+            <span className="text-[13px] text-fg-secondary">농어촌특별세 {results.ruralSpecialTax === 0 ? '(비과세)' : '(취득세의 10%)'}</span>
             <span className="text-[14px] font-medium text-fg tabular-nums">
               {formatNumber(results.ruralSpecialTax)}원
             </span>

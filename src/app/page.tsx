@@ -58,9 +58,15 @@ import {
   Weight,
   Calendar,
   CalendarRange,
+  HeartHandshake,
+  BookOpen,
+  Accessibility,
+  UserCheck,
+  Ribbon,
+  HandHeart,
 } from 'lucide-react';
 
-type CategoryType = 'all' | 'estate' | 'tax' | 'finance' | 'labor' | 'pension' | 'investment' | 'life';
+type CategoryType = 'all' | 'estate' | 'tax' | 'finance' | 'labor' | 'pension' | 'investment' | 'life' | 'welfare';
 
 interface CalculatorItem {
   id: string;
@@ -567,6 +573,63 @@ const calculators: CalculatorItem[] = [
     href: '/calculators/life/car-cost',
     category: 'life',
   },
+  // 복지
+  {
+    id: 'basic-livelihood',
+    title: '기초생활보장',
+    description: '생계·의료·주거·교육급여 수급자격을 모의계산합니다.',
+    icon: <HeartHandshake size={20} strokeWidth={1.6} />,
+    href: '/calculators/welfare/basic-livelihood',
+    category: 'welfare',
+  },
+  {
+    id: 'education-support',
+    title: '교육비지원',
+    description: '초·중·고 교육비 지원 대상 여부를 모의계산합니다.',
+    icon: <BookOpen size={20} strokeWidth={1.6} />,
+    href: '/calculators/welfare/education',
+    category: 'welfare',
+  },
+  {
+    id: 'disability-allowance',
+    title: '장애(아동)수당',
+    description: '장애수당·장애아동수당 수급자격을 모의계산합니다.',
+    icon: <Accessibility size={20} strokeWidth={1.6} />,
+    href: '/calculators/welfare/disability-allowance',
+    category: 'welfare',
+  },
+  {
+    id: 'disability-pension',
+    title: '장애인연금',
+    description: '중증장애인 장애인연금 수급자격을 모의계산합니다.',
+    icon: <UserCheck size={20} strokeWidth={1.6} />,
+    href: '/calculators/welfare/disability-pension',
+    category: 'welfare',
+  },
+  {
+    id: 'single-parent',
+    title: '한부모가족지원',
+    description: '한부모가족 지원 대상 여부를 모의계산합니다.',
+    icon: <Users size={20} strokeWidth={1.6} />,
+    href: '/calculators/welfare/single-parent',
+    category: 'welfare',
+  },
+  {
+    id: 'maternity-care',
+    title: '산모·신생아 건강관리',
+    description: '산모·신생아 건강관리 서비스 지원 여부를 모의계산합니다.',
+    icon: <Ribbon size={20} strokeWidth={1.6} />,
+    href: '/calculators/welfare/maternity-care',
+    category: 'welfare',
+  },
+  {
+    id: 'childcare',
+    title: '아이돌봄서비스',
+    description: '아이돌봄서비스 지원 대상과 본인부담금을 모의계산합니다.',
+    icon: <HandHeart size={20} strokeWidth={1.6} />,
+    href: '/calculators/welfare/childcare',
+    category: 'welfare',
+  },
 ];
 
 const categoryGroups = [
@@ -577,6 +640,7 @@ const categoryGroups = [
   { id: 'pension' as const, name: '연금/보험', description: '국민연금, 건강보험, 4대보험, 퇴직연금, 주택연금, 기초연금' },
   { id: 'investment' as const, name: '투자', description: '주식수익률, 배당, ISA, FIRE, 72법칙, 목돈마련' },
   { id: 'life' as const, name: '생활', description: 'BMI, 만나이, 날짜, 전기, 가스, 수도, 자동차유지비' },
+  { id: 'welfare' as const, name: '복지', description: '기초생활보장, 교육비지원, 장애수당, 장애인연금, 한부모가족, 산모신생아, 아이돌봄' },
 ];
 
 const categories: Array<{ id: CategoryType; name: string }> = [
@@ -588,6 +652,7 @@ const categories: Array<{ id: CategoryType; name: string }> = [
   { id: 'pension', name: '연금/보험' },
   { id: 'investment', name: '투자' },
   { id: 'life', name: '생활' },
+  { id: 'welfare', name: '복지' },
 ];
 
 export default function Home() {
@@ -616,7 +681,7 @@ export default function Home() {
               단순하게.
             </h1>
             <p className="text-[17px] text-fg-secondary leading-relaxed mb-8">
-              부동산, 세금, 금융, 근로, 연금, 투자, 생활까지 — 정확한 결과로 합리적인 의사결정을 돕습니다.
+              부동산, 세금, 금융, 근로, 연금, 투자, 생활, 복지까지 — 정확한 결과로 합리적인 의사결정을 돕습니다.
             </p>
 
             {/* Search */}

@@ -19,6 +19,13 @@ import {
   Briefcase,
   ClipboardList,
   Search,
+  Receipt,
+  LogOut,
+  Car,
+  KeyRound,
+  CandlestickChart,
+  Coins,
+  Calculator,
 } from 'lucide-react';
 
 type CategoryType = 'all' | 'estate' | 'tax' | 'finance' | 'labor';
@@ -106,6 +113,62 @@ const calculators: Calculator[] = [
     category: 'tax',
   },
   {
+    id: 'vat',
+    title: '부가가치세',
+    description: '일반/간이과세자의 부가가치세를 계산합니다.',
+    icon: <Receipt size={20} strokeWidth={1.6} />,
+    href: '/calculators/tax/vat',
+    category: 'tax',
+  },
+  {
+    id: 'retirement-income',
+    title: '퇴직소득세',
+    description: '퇴직금 수령 시 퇴직소득세를 계산합니다.',
+    icon: <LogOut size={20} strokeWidth={1.6} />,
+    href: '/calculators/tax/retirement-income',
+    category: 'tax',
+  },
+  {
+    id: 'car-tax',
+    title: '자동차세',
+    description: '배기량과 차령에 따른 자동차세를 계산합니다.',
+    icon: <Car size={20} strokeWidth={1.6} />,
+    href: '/calculators/tax/car-tax',
+    category: 'tax',
+  },
+  {
+    id: 'car-acquisition',
+    title: '자동차 취등록세',
+    description: '차량 구매 시 취득세와 등록비용을 계산합니다.',
+    icon: <KeyRound size={20} strokeWidth={1.6} />,
+    href: '/calculators/tax/car-acquisition',
+    category: 'tax',
+  },
+  {
+    id: 'stock-tax',
+    title: '주식 양도소득세',
+    description: '국내 대주주 및 해외주식 양도소득세를 계산합니다.',
+    icon: <CandlestickChart size={20} strokeWidth={1.6} />,
+    href: '/calculators/tax/stock-tax',
+    category: 'tax',
+  },
+  {
+    id: 'financial-income',
+    title: '금융소득종합과세',
+    description: '이자/배당 소득의 종합과세 세액을 계산합니다.',
+    icon: <Coins size={20} strokeWidth={1.6} />,
+    href: '/calculators/tax/financial-income',
+    category: 'tax',
+  },
+  {
+    id: 'year-end',
+    title: '연말정산',
+    description: '연말정산 예상 환급금을 계산합니다.',
+    icon: <Calculator size={20} strokeWidth={1.6} />,
+    href: '/calculators/tax/year-end',
+    category: 'tax',
+  },
+  {
     id: 'loan',
     title: '대출이자',
     description: '대출 상환액과 이자를 계산합니다.',
@@ -157,7 +220,7 @@ const calculators: Calculator[] = [
 
 const categoryGroups = [
   { id: 'estate' as const, name: '부동산', description: '면적, 수수료, 청약' },
-  { id: 'tax' as const, name: '세금', description: '양도세, 취득세, 재산세, 종부세, 증여세, 상속세' },
+  { id: 'tax' as const, name: '세금', description: '양도세, 취득세, 재산세, 종부세, 증여세, 상속세, 부가세, 퇴직소득세, 자동차세, 주식양도세, 금융소득, 연말정산' },
   { id: 'finance' as const, name: '금융', description: '대출, 예금, 적금, 인플레이션' },
   { id: 'labor' as const, name: '근로', description: '연봉, 퇴직금' },
 ];

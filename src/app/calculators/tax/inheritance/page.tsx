@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
+import { FormStep, FormProgress } from '@/components/FormStep';
 
 export default function InheritanceTaxCalculator() {
   const [inheritanceAmount, setInheritanceAmount] = useState('');
@@ -116,6 +117,22 @@ export default function InheritanceTaxCalculator() {
     });
   };
 
+  const totalSteps = hasSpouse === 'yes' ? 6 : 5;
+
+  const completedSteps = (() => {
+    let count = 0;
+    if (inheritanceAmount) count++;
+    if (debt || true) count++; // optional
+    if (funeralExpenses || true) count++; // optional
+    if (hasSpouse) count++;
+    if (hasSpouse === 'yes' && spouseAmount) count++;
+    if (hasSpouse === 'no') count++; // skip spouse amount step
+    if (childrenCount) count++;
+    return Math.min(count, totalSteps);
+  })();
+
+  let stepCounter = 0;
+
   return (
     <div className="mx-auto max-w-[1200px] px-6">
       {/* Breadcrumb */}
@@ -138,11 +155,10 @@ export default function InheritanceTaxCalculator() {
       {/* Form */}
       <div className="border border-border rounded-2xl bg-surface overflow-hidden mb-8">
         <div className="p-6 md:p-8">
+          <FormProgress current={completedSteps} total={totalSteps} />
+
           {/* 상속재산가액 */}
-          <div className="mb-6">
-            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-              상속재산가액 (원) *
-            </label>
+          <FormStep step={stepCounter = 1} label="상속재산가액 입력" required completed={!!inheritanceAmount}>
             <input
               type="number"
               value={inheritanceAmount}
@@ -153,13 +169,10 @@ export default function InheritanceTaxCalculator() {
             <p className="text-[12px] text-fg-muted mt-1.5">
               부동산, 예금, 주식 등 모든 상속 재산의 합
             </p>
-          </div>
+          </FormStep>
 
           {/* 채무 */}
-          <div className="mb-6">
-            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-              피상속인의 채무 (원)
-            </label>
+          <FormStep step={stepCounter = 2} label="피상속인의 채무 입력 (선택)" completed={!!debt}>
             <input
               type="number"
               value={debt}
@@ -170,13 +183,10 @@ export default function InheritanceTaxCalculator() {
             <p className="text-[12px] text-fg-muted mt-1.5">
               상속 시 인수하는 채무, 신용카드 채무 등
             </p>
-          </div>
+          </FormStep>
 
           {/* 장례비용 */}
-          <div className="mb-6">
-            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-              장례비용 (원)
-            </label>
+          <FormStep step={stepCounter = 3} label="장례비용 입력 (선택)" completed={!!funeralExpenses}>
             <input
               type="number"
               value={funeralExpenses}
@@ -187,13 +197,10 @@ export default function InheritanceTaxCalculator() {
             <p className="text-[12px] text-fg-muted mt-1.5">
               최소 500만원, 최대 1,500만원으로 조정
             </p>
-          </div>
+          </FormStep>
 
           {/* 배우자 */}
-          <div className="mb-6">
-            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-              배우자 상속 여부
-            </label>
+          <FormStep step={stepCounter = 4} label="배우자 상속 여부 선택" required completed={!!hasSpouse}>
             <div className="flex flex-wrap gap-2">
               {[
                 { val: 'yes', label: '예' },
@@ -213,14 +220,11 @@ export default function InheritanceTaxCalculator() {
                 </button>
               ))}
             </div>
-          </div>
+          </FormStep>
 
           {/* 배우자 상속액 */}
           {hasSpouse === 'yes' && (
-            <div className="mb-6">
-              <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-                배우자 상속액 (원)
-              </label>
+            <FormStep step={stepCounter = 5} label="배우자 상속액 입력" required completed={!!spouseAmount}>
               <input
                 type="number"
                 value={spouseAmount}
@@ -231,14 +235,11 @@ export default function InheritanceTaxCalculator() {
               <p className="text-[12px] text-fg-muted mt-1.5">
                 배우자가 상속받을 예정인 금액
               </p>
-            </div>
+            </FormStep>
           )}
 
           {/* 자녀 수 */}
-          <div className="mb-6">
-            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-              자녀 수
-            </label>
+          <FormStep step={hasSpouse === 'yes' ? (stepCounter = 6) : (stepCounter = 5)} label="자녀 수 입력" required completed={!!childrenCount}>
             <input
               type="number"
               value={childrenCount}
@@ -249,15 +250,17 @@ export default function InheritanceTaxCalculator() {
             <p className="text-[12px] text-fg-muted mt-1.5">
               인적공제: 자녀 1인당 5천만원
             </p>
-          </div>
+          </FormStep>
 
           {/* Calculate Button */}
-          <button
-            onClick={handleCalculate}
-            className="w-full h-11 bg-accent hover:bg-accent-hover text-accent-fg font-medium rounded-xl transition-colors"
-          >
-            계산하기
-          </button>
+          <div className="pl-[30px]">
+            <button
+              onClick={handleCalculate}
+              className="w-full h-11 bg-accent hover:bg-accent-hover text-accent-fg font-medium rounded-xl transition-colors"
+            >
+              계산하기
+            </button>
+          </div>
         </div>
       </div>
 

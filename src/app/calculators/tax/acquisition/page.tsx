@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
+import { FormStep, FormProgress } from '@/components/FormStep';
 
 export default function AcquisitionTaxCalculator() {
   const [householdCount, setHouseholdCount] = useState('1');
@@ -70,6 +71,13 @@ export default function AcquisitionTaxCalculator() {
     });
   };
 
+  const completedCount = [
+    !!householdCount,
+    !!acquisitionAmount,
+    !!isAdjustedArea,
+    !!houseSize,
+  ].filter(Boolean).length;
+
   return (
     <div className="mx-auto max-w-[1200px] px-6">
       {/* Breadcrumb */}
@@ -92,11 +100,10 @@ export default function AcquisitionTaxCalculator() {
       {/* Form */}
       <div className="border border-border rounded-2xl bg-surface overflow-hidden mb-8">
         <div className="p-6 md:p-8">
+          <FormProgress current={completedCount} total={4} />
+
           {/* 주택수 */}
-          <div className="mb-6">
-            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-              주택 수 선택
-            </label>
+          <FormStep step={1} label="주택수 선택" required completed={!!householdCount}>
             <div className="flex flex-wrap gap-2">
               {[
                 { val: '1', label: '1주택' },
@@ -119,13 +126,10 @@ export default function AcquisitionTaxCalculator() {
                 </button>
               ))}
             </div>
-          </div>
+          </FormStep>
 
           {/* 취득가액 */}
-          <div className="mb-6">
-            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-              취득가액 (원) *
-            </label>
+          <FormStep step={2} label="취득가액 입력" required completed={!!acquisitionAmount}>
             <input
               type="number"
               value={acquisitionAmount}
@@ -136,13 +140,10 @@ export default function AcquisitionTaxCalculator() {
             <p className="text-[12px] text-fg-muted mt-1.5">
               계약금 + 잔금 합계 금액
             </p>
-          </div>
+          </FormStep>
 
           {/* 조정대상지역 */}
-          <div className="mb-6">
-            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-              조정대상지역 여부
-            </label>
+          <FormStep step={3} label="조정대상지역 여부" required completed={!!isAdjustedArea}>
             <div className="flex flex-wrap gap-2">
               {[
                 { val: 'no', label: '아니오' },
@@ -162,13 +163,10 @@ export default function AcquisitionTaxCalculator() {
                 </button>
               ))}
             </div>
-          </div>
+          </FormStep>
 
           {/* 주택 면적 */}
-          <div className="mb-6">
-            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-              주택 면적
-            </label>
+          <FormStep step={4} label="주택면적 선택" required completed={!!houseSize}>
             <div className="flex flex-wrap gap-2">
               {[
                 { val: 'small', label: '85m² 이하' },
@@ -188,15 +186,17 @@ export default function AcquisitionTaxCalculator() {
                 </button>
               ))}
             </div>
-          </div>
+          </FormStep>
 
           {/* Calculate Button */}
-          <button
-            onClick={handleCalculate}
-            className="w-full h-11 bg-accent hover:bg-accent-hover text-accent-fg font-medium rounded-xl transition-colors"
-          >
-            계산하기
-          </button>
+          <div className="pl-[30px]">
+            <button
+              onClick={handleCalculate}
+              className="w-full h-11 bg-accent hover:bg-accent-hover text-accent-fg font-medium rounded-xl transition-colors"
+            >
+              계산하기
+            </button>
+          </div>
         </div>
       </div>
 

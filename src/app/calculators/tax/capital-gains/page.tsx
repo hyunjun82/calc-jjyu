@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
+import { FormStep, FormProgress } from '@/components/FormStep';
 
 export default function CapitalGainsTaxCalculator() {
   const [householdCount, setHouseholdCount] = useState('1');
@@ -163,11 +164,19 @@ export default function CapitalGainsTaxCalculator() {
       {/* Form */}
       <div className="border border-border rounded-2xl bg-surface overflow-hidden mb-8">
         <div className="p-6 md:p-8">
-          {/* 주택수 */}
-          <div className="mb-6">
-            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-              주택수 선택
-            </label>
+          <FormProgress
+            current={[
+              householdCount,
+              isAdjustedArea,
+              acquisitionDate,
+              disposalDate,
+              disposalAmount,
+              acquisitionAmount,
+            ].filter(Boolean).length}
+            total={6}
+          />
+
+          <FormStep step={1} label="주택수를 선택하세요" completed={!!householdCount}>
             <div className="flex flex-wrap gap-2">
               {['1', '2', '3'].map((val) => (
                 <button
@@ -186,13 +195,9 @@ export default function CapitalGainsTaxCalculator() {
                 </button>
               ))}
             </div>
-          </div>
+          </FormStep>
 
-          {/* 조정대상지역 */}
-          <div className="mb-6">
-            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-              조정대상지역 여부
-            </label>
+          <FormStep step={2} label="조정대상지역 여부를 선택하세요" completed={!!isAdjustedArea}>
             <div className="flex flex-wrap gap-2">
               {[
                 { val: 'no', label: '아니오' },
@@ -212,39 +217,27 @@ export default function CapitalGainsTaxCalculator() {
                 </button>
               ))}
             </div>
-          </div>
+          </FormStep>
 
-          {/* 취득일자 */}
-          <div className="mb-6">
-            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-              취득일자 *
-            </label>
+          <FormStep step={3} label="취득일자를 입력하세요" required completed={!!acquisitionDate}>
             <input
               type="date"
               value={acquisitionDate}
               onChange={(e) => setAcquisitionDate(e.target.value)}
               className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg placeholder:text-fg-muted outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
             />
-          </div>
+          </FormStep>
 
-          {/* 양도일자 */}
-          <div className="mb-6">
-            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-              양도일자 *
-            </label>
+          <FormStep step={4} label="양도일자를 입력하세요" required completed={!!disposalDate}>
             <input
               type="date"
               value={disposalDate}
               onChange={(e) => setDisposalDate(e.target.value)}
               className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg placeholder:text-fg-muted outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
             />
-          </div>
+          </FormStep>
 
-          {/* 거주여부 */}
-          <div className="mb-6">
-            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-              거주여부
-            </label>
+          <FormStep step={5} label="거주여부를 선택하세요" completed={true}>
             <div className="flex flex-wrap gap-2">
               {[
                 { val: 'yes', label: '예' },
@@ -264,73 +257,59 @@ export default function CapitalGainsTaxCalculator() {
                 </button>
               ))}
             </div>
-          </div>
+            {isResiding === 'yes' && (
+              <div className="mt-3">
+                <label className="block text-[12px] text-fg-muted mb-1.5">거주기간 (년)</label>
+                <input
+                  type="number"
+                  value={residingYears}
+                  onChange={(e) => setResidingYears(parseInt(e.target.value) || 0)}
+                  className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg placeholder:text-fg-muted outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
+                  min="0"
+                />
+              </div>
+            )}
+          </FormStep>
 
-          {/* 거주기간 */}
-          {isResiding === 'yes' && (
-            <div className="mb-6">
-              <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-                거주기간 (년)
-              </label>
-              <input
-                type="number"
-                value={residingYears}
-                onChange={(e) => setResidingYears(parseInt(e.target.value) || 0)}
-                className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg placeholder:text-fg-muted outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
-                min="0"
-              />
-            </div>
-          )}
-
-          {/* 양도가액 */}
-          <div className="mb-6">
-            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-              양도가액 (원) *
-            </label>
+          <FormStep step={6} label="양도가액을 입력하세요" required completed={!!disposalAmount}>
             <input
               type="number"
               value={disposalAmount}
               onChange={(e) => setDisposalAmount(e.target.value)}
               className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg placeholder:text-fg-muted outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
-              placeholder="0"
+              placeholder="팔려는 금액을 입력하세요"
             />
-          </div>
+          </FormStep>
 
-          {/* 취득가액 */}
-          <div className="mb-6">
-            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-              취득가액 (원) *
-            </label>
+          <FormStep step={7} label="취득가액을 입력하세요" required completed={!!acquisitionAmount}>
             <input
               type="number"
               value={acquisitionAmount}
               onChange={(e) => setAcquisitionAmount(e.target.value)}
               className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg placeholder:text-fg-muted outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
-              placeholder="0"
+              placeholder="구입했던 금액을 입력하세요"
             />
-          </div>
+          </FormStep>
 
-          {/* 필요경비 */}
-          <div className="mb-6">
-            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-              필요경비 (원)
-            </label>
+          <FormStep step={8} label="필요경비를 입력하세요 (선택)" completed={!!necessaryExpenses}>
             <input
               type="number"
               value={necessaryExpenses}
               onChange={(e) => setNecessaryExpenses(e.target.value)}
               className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg placeholder:text-fg-muted outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
-              placeholder="0"
+              placeholder="중개수수료, 등기료 등"
             />
-          </div>
+          </FormStep>
 
           {/* Calculate Button */}
-          <button
-            onClick={handleCalculate}
-            className="w-full h-11 bg-accent hover:bg-accent-hover text-accent-fg font-medium rounded-xl transition-colors"
-          >
-            계산하기
-          </button>
+          <div className="pl-[30px]">
+            <button
+              onClick={handleCalculate}
+              className="w-full h-11 bg-accent hover:bg-accent-hover text-accent-fg font-medium rounded-xl transition-colors"
+            >
+              계산하기
+            </button>
+          </div>
         </div>
       </div>
 

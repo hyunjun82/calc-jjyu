@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
+import { FormStep, FormProgress } from '@/components/FormStep';
 
 interface ScheduleItem {
   month: number;
@@ -156,100 +157,111 @@ export default function LoanCalculator() {
         <div className="lg:col-span-1">
           <div className="border border-border rounded-2xl bg-surface p-6 sticky top-20">
             <h2 className="text-[16px] font-semibold text-fg mb-5">계산 설정</h2>
+            <FormProgress current={[loanAmount > 0, annualRate > 0, duration > 0, !!repaymentType].filter(Boolean).length} total={4} />
 
             <div className="space-y-4">
               {/* 대출금액 */}
-              <div>
-                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-                  대출금액 <span className="text-negative">*</span>
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    value={loanAmount}
-                    onChange={(e) => setLoanAmount(Number(e.target.value))}
-                    className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
-                  />
-                  <span className="text-[13px] text-fg-muted">원</span>
+              <FormStep step={1} label="대출금액을 입력하세요" required completed={loanAmount > 0}>
+                <div>
+                  <label className="block text-[13px] font-medium text-fg-secondary mb-2">
+                    대출금액 <span className="text-negative">*</span>
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      value={loanAmount}
+                      onChange={(e) => setLoanAmount(Number(e.target.value))}
+                      className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
+                    />
+                    <span className="text-[13px] text-fg-muted">원</span>
+                  </div>
+                  <p className="text-[12px] text-fg-muted mt-1.5">
+                    {loanAmount.toLocaleString('ko-KR')} 원
+                  </p>
                 </div>
-                <p className="text-[12px] text-fg-muted mt-1.5">
-                  {loanAmount.toLocaleString('ko-KR')} 원
-                </p>
-              </div>
+              </FormStep>
 
               {/* 연이율 */}
-              <div>
-                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-                  연이율 <span className="text-negative">*</span>
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    value={annualRate}
-                    onChange={(e) => setAnnualRate(Number(e.target.value))}
-                    step="0.01"
-                    className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
-                  />
-                  <span className="text-[13px] text-fg-muted">%</span>
+              <FormStep step={2} label="연이율을 입력하세요" required completed={annualRate > 0}>
+                <div>
+                  <label className="block text-[13px] font-medium text-fg-secondary mb-2">
+                    연이율 <span className="text-negative">*</span>
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      value={annualRate}
+                      onChange={(e) => setAnnualRate(Number(e.target.value))}
+                      step="0.01"
+                      className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
+                    />
+                    <span className="text-[13px] text-fg-muted">%</span>
+                  </div>
                 </div>
-              </div>
+              </FormStep>
 
               {/* 대출기간 */}
-              <div>
-                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-                  대출기간 <span className="text-negative">*</span>
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="number"
-                    value={duration}
-                    onChange={(e) => setDuration(Number(e.target.value))}
-                    className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
-                  />
-                  <select
-                    value={durationType}
-                    onChange={(e) => setDurationType(e.target.value)}
-                    className="h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
-                  >
-                    <option value="year">년</option>
-                    <option value="month">개월</option>
-                  </select>
+              <FormStep step={3} label="대출기간을 입력하세요" required completed={duration > 0}>
+                <div>
+                  <label className="block text-[13px] font-medium text-fg-secondary mb-2">
+                    대출기간 <span className="text-negative">*</span>
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      value={duration}
+                      onChange={(e) => setDuration(Number(e.target.value))}
+                      className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
+                    />
+                    <select
+                      value={durationType}
+                      onChange={(e) => setDurationType(e.target.value)}
+                      className="h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
+                    >
+                      <option value="year">년</option>
+                      <option value="month">개월</option>
+                    </select>
+                  </div>
                 </div>
-              </div>
+              </FormStep>
 
               {/* 상환방식 */}
-              <div>
-                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-                  상환방식 <span className="text-negative">*</span>
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    { value: 'equal-payment', label: '원리금균등' },
-                    { value: 'equal-principal', label: '원금균등' },
-                    { value: 'bullet', label: '만기일시상환' },
-                  ].map((option) => (
-                    <button
-                      key={option.value}
-                      type="button"
-                      onClick={() => setRepaymentType(option.value)}
-                      className={`px-4 h-9 rounded-lg text-[13px] font-medium transition-colors ${
-                        repaymentType === option.value
-                          ? 'bg-accent text-accent-fg'
-                          : 'bg-bg-tertiary text-fg-secondary hover:text-fg hover:bg-surface-active'
-                      }`}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
+              <FormStep step={4} label="상환방식을 선택하세요" required completed={!!repaymentType}>
+                <div>
+                  <label className="block text-[13px] font-medium text-fg-secondary mb-2">
+                    상환방식 <span className="text-negative">*</span>
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { value: 'equal-payment', label: '원리금균등' },
+                      { value: 'equal-principal', label: '원금균등' },
+                      { value: 'bullet', label: '만기일시상환' },
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setRepaymentType(option.value)}
+                        className={`px-4 h-9 rounded-lg text-[13px] font-medium transition-colors ${
+                          repaymentType === option.value
+                            ? 'bg-accent text-accent-fg'
+                            : 'bg-bg-tertiary text-fg-secondary hover:text-fg hover:bg-surface-active'
+                        }`}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              </FormStep>
 
-              <button
-                onClick={handleCalculate}
-                className="w-full h-11 bg-accent hover:bg-accent-hover text-accent-fg font-medium rounded-xl transition-colors"
-              >
-                계산하기
-              </button>
+              <div className="pl-[30px]">
+                <button
+                  onClick={handleCalculate}
+                  className="w-full h-11 bg-accent hover:bg-accent-hover text-accent-fg font-medium rounded-xl transition-colors"
+                >
+                  계산하기
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
+import { FormStep, FormProgress } from '@/components/FormStep';
 
 export default function PropertyTaxCalculator() {
   const [publicPrice, setPublicPrice] = useState('');
@@ -86,6 +87,11 @@ export default function PropertyTaxCalculator() {
     });
   };
 
+  const completedCount = [
+    !!publicPrice,
+    !!propertyType,
+  ].filter(Boolean).length;
+
   return (
     <div className="mx-auto max-w-[1200px] px-6">
       {/* Breadcrumb */}
@@ -108,11 +114,10 @@ export default function PropertyTaxCalculator() {
       {/* Form */}
       <div className="border border-border rounded-2xl bg-surface overflow-hidden mb-8">
         <div className="p-6 md:p-8">
+          <FormProgress current={completedCount} total={2} />
+
           {/* 주택 공시가격 */}
-          <div className="mb-6">
-            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-              공시가격 (원) *
-            </label>
+          <FormStep step={1} label="공시가격 입력" required completed={!!publicPrice}>
             <input
               type="number"
               value={publicPrice}
@@ -126,13 +131,10 @@ export default function PropertyTaxCalculator() {
             <p className="text-[12px] text-fg-muted mt-1">
               ※ 공정시장가액비율은 매년 정부 고시에 따라 변동될 수 있습니다.
             </p>
-          </div>
+          </FormStep>
 
           {/* 주택 유형 */}
-          <div className="mb-6">
-            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-              주택 유형
-            </label>
+          <FormStep step={2} label="주택유형 선택" required completed={!!propertyType}>
             <div className="flex flex-wrap gap-2">
               {[
                 { val: 'house', label: '주택' },
@@ -153,15 +155,17 @@ export default function PropertyTaxCalculator() {
                 </button>
               ))}
             </div>
-          </div>
+          </FormStep>
 
           {/* Calculate Button */}
-          <button
-            onClick={handleCalculate}
-            className="w-full h-11 bg-accent hover:bg-accent-hover text-accent-fg font-medium rounded-xl transition-colors"
-          >
-            계산하기
-          </button>
+          <div className="pl-[30px]">
+            <button
+              onClick={handleCalculate}
+              className="w-full h-11 bg-accent hover:bg-accent-hover text-accent-fg font-medium rounded-xl transition-colors"
+            >
+              계산하기
+            </button>
+          </div>
         </div>
       </div>
 

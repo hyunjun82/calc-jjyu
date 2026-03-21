@@ -5,12 +5,26 @@ import Footer from "@/components/Footer";
 import ThemeProvider from "@/components/ThemeProvider";
 
 export const metadata: Metadata = {
-  title: "calc.jjyu — 계산기",
-  description: "부동산, 세금, 금융, 근로 등 다양한 분야의 정확한 계산기 서비스",
+  title: "calc.jjyu — 부동산, 세금, 금융, 근로 계산기",
+  description: "양도소득세, 취득세, 중개수수료, 대출이자, 연봉 실수령액 등 15가지 계산기를 무료로 이용하세요. 2026년 최신 세법 기준 정확한 계산.",
+  metadataBase: new URL("https://calc.jjyu.co.kr"),
   openGraph: {
-    title: "calc.jjyu — 계산기",
-    description: "부동산, 세금, 금융, 근로 등 다양한 분야의 정확한 계산기 서비스",
+    title: "calc.jjyu — 부동산, 세금, 금융, 근로 계산기",
+    description: "양도소득세, 취득세, 중개수수료, 대출이자, 연봉 실수령액 등 15가지 계산기를 무료로 이용하세요.",
     type: "website",
+    locale: "ko_KR",
+    siteName: "calc.jjyu",
+  },
+  alternates: {
+    canonical: "https://calc.jjyu.co.kr",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  other: {
+    "naver-site-verification": "",
+    "google-site-verification": "",
   },
 };
 

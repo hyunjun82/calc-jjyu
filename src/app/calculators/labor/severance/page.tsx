@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
+import { FormStep, FormProgress } from '@/components/FormStep';
 
 interface SeveranceResult {
   startDate: string;
@@ -106,37 +107,30 @@ export default function SeveranceCalculator() {
             <h2 className="text-[16px] font-semibold text-fg mb-5">계산 설정</h2>
 
             <div className="space-y-4">
+              <FormProgress current={[startDate.length > 0, endDate.length > 0, last3MonthsWages > 0, bonus3Months > 0, annualLeave > 0].filter(Boolean).length} total={5} />
+
               {/* 입사일 */}
-              <div>
-                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-                  입사일 <span className="text-negative">*</span>
-                </label>
+              <FormStep step={1} label="입사일" required completed={startDate.length > 0}>
                 <input
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
                   className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
                 />
-              </div>
+              </FormStep>
 
               {/* 퇴사일 */}
-              <div>
-                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-                  퇴사일 <span className="text-negative">*</span>
-                </label>
+              <FormStep step={2} label="퇴사일" required completed={endDate.length > 0}>
                 <input
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
                   className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
                 />
-              </div>
+              </FormStep>
 
               {/* 최근 3개월 임금총액 */}
-              <div>
-                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-                  최근 3개월 임금총액 <span className="text-negative">*</span>
-                </label>
+              <FormStep step={3} label="최근3개월 임금총액" required completed={last3MonthsWages > 0}>
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
@@ -149,13 +143,10 @@ export default function SeveranceCalculator() {
                 <p className="text-[12px] text-fg-muted mt-1.5">
                   {last3MonthsWages.toLocaleString('ko-KR')} 원
                 </p>
-              </div>
+              </FormStep>
 
               {/* 최근 3개월 상여금 */}
-              <div>
-                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-                  최근 3개월 상여금 (연간기준)
-                </label>
+              <FormStep step={4} label="최근3개월 상여금" completed={bonus3Months > 0}>
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
@@ -168,13 +159,10 @@ export default function SeveranceCalculator() {
                 <p className="text-[12px] text-fg-muted mt-1.5">
                   {bonus3Months.toLocaleString('ko-KR')} 원
                 </p>
-              </div>
+              </FormStep>
 
               {/* 연차수당 */}
-              <div>
-                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-                  미사용 연차수당 (연간기준)
-                </label>
+              <FormStep step={5} label="미사용 연차수당" completed={annualLeave > 0}>
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
@@ -187,14 +175,16 @@ export default function SeveranceCalculator() {
                 <p className="text-[12px] text-fg-muted mt-1.5">
                   {annualLeave.toLocaleString('ko-KR')} 원
                 </p>
-              </div>
+              </FormStep>
 
-              <button
-                onClick={handleCalculate}
-                className="w-full h-11 bg-accent hover:bg-accent-hover text-accent-fg font-medium rounded-xl transition-colors"
-              >
-                계산하기
-              </button>
+              <div className="pl-[30px]">
+                <button
+                  onClick={handleCalculate}
+                  className="w-full h-11 bg-accent hover:bg-accent-hover text-accent-fg font-medium rounded-xl transition-colors"
+                >
+                  계산하기
+                </button>
+              </div>
             </div>
           </div>
         </div>

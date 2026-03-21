@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
+import { FormStep, FormProgress } from '@/components/FormStep';
 
 export default function GiftTaxCalculator() {
   const [relationship, setRelationship] = useState('child');
@@ -98,6 +99,13 @@ export default function GiftTaxCalculator() {
     });
   };
 
+  const completedCount = [
+    !!relationship,
+    !!giftAmount,
+    !!debt || true, // optional, always counted
+    !!previousGift10Years || true, // optional, always counted
+  ].filter(Boolean).length;
+
   return (
     <div className="mx-auto max-w-[1200px] px-6">
       {/* Breadcrumb */}
@@ -120,11 +128,10 @@ export default function GiftTaxCalculator() {
       {/* Form */}
       <div className="border border-border rounded-2xl bg-surface overflow-hidden mb-8">
         <div className="p-6 md:p-8">
+          <FormProgress current={completedCount} total={4} />
+
           {/* 증여자와의 관계 */}
-          <div className="mb-6">
-            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-              증여자와의 관계
-            </label>
+          <FormStep step={1} label="증여자와의 관계 선택" required completed={!!relationship}>
             <div className="flex flex-wrap gap-2">
               {[
                 { val: 'spouse', label: '배우자 (공제 6억원)' },
@@ -149,13 +156,10 @@ export default function GiftTaxCalculator() {
                 </button>
               ))}
             </div>
-          </div>
+          </FormStep>
 
           {/* 증여재산가액 */}
-          <div className="mb-6">
-            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-              증여재산가액 (원) *
-            </label>
+          <FormStep step={2} label="증여재산가액 입력" required completed={!!giftAmount}>
             <input
               type="number"
               value={giftAmount}
@@ -166,13 +170,10 @@ export default function GiftTaxCalculator() {
             <p className="text-[12px] text-fg-muted mt-1.5">
               증여받은 재산의 평가액 (현금, 부동산 등)
             </p>
-          </div>
+          </FormStep>
 
           {/* 채무부담액 */}
-          <div className="mb-6">
-            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-              채무부담액 (원)
-            </label>
+          <FormStep step={3} label="채무부담액 입력 (선택)" completed={!!debt}>
             <input
               type="number"
               value={debt}
@@ -183,13 +184,10 @@ export default function GiftTaxCalculator() {
             <p className="text-[12px] text-fg-muted mt-1.5">
               증여받은 부동산의 담보 대출금
             </p>
-          </div>
+          </FormStep>
 
           {/* 10년 이내 동일인 증여액 */}
-          <div className="mb-6">
-            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-              10년 이내 동일인 증여액 (원)
-            </label>
+          <FormStep step={4} label="10년 이내 동일인 증여액 입력 (선택)" completed={!!previousGift10Years}>
             <input
               type="number"
               value={previousGift10Years}
@@ -200,15 +198,17 @@ export default function GiftTaxCalculator() {
             <p className="text-[12px] text-fg-muted mt-1.5">
               지난 10년 이내 동일인으로부터 받은 증여액
             </p>
-          </div>
+          </FormStep>
 
           {/* Calculate Button */}
-          <button
-            onClick={handleCalculate}
-            className="w-full h-11 bg-accent hover:bg-accent-hover text-accent-fg font-medium rounded-xl transition-colors"
-          >
-            계산하기
-          </button>
+          <div className="pl-[30px]">
+            <button
+              onClick={handleCalculate}
+              className="w-full h-11 bg-accent hover:bg-accent-hover text-accent-fg font-medium rounded-xl transition-colors"
+            >
+              계산하기
+            </button>
+          </div>
         </div>
       </div>
 

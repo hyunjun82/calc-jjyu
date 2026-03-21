@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
+import { FormStep, FormProgress } from '@/components/FormStep';
 
 interface SalaryResult {
   annualSalary: number;
@@ -233,83 +234,95 @@ export default function SalaryCalculator() {
           <div className="border border-border rounded-2xl bg-surface p-6 sticky top-20">
             <h2 className="text-[16px] font-semibold text-fg mb-5">계산 설정</h2>
 
+            <FormProgress current={4} total={4} />
+
             <div className="space-y-4">
               {/* 연봉 */}
-              <div>
-                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-                  연봉 <span className="text-negative">*</span>
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    value={annualSalary}
-                    onChange={(e) => setAnnualSalary(Number(e.target.value))}
-                    className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
-                  />
-                  <span className="text-[13px] text-fg-muted">원</span>
+              <FormStep step={1} label="연봉을 입력하세요" required completed={annualSalary > 0}>
+                <div>
+                  <label className="block text-[13px] font-medium text-fg-secondary mb-2">
+                    연봉 <span className="text-negative">*</span>
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      value={annualSalary}
+                      onChange={(e) => setAnnualSalary(Number(e.target.value))}
+                      className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
+                    />
+                    <span className="text-[13px] text-fg-muted">원</span>
+                  </div>
+                  <p className="text-[12px] text-fg-muted mt-1.5">
+                    {annualSalary.toLocaleString('ko-KR')} 원
+                  </p>
                 </div>
-                <p className="text-[12px] text-fg-muted mt-1.5">
-                  {annualSalary.toLocaleString('ko-KR')} 원
-                </p>
-              </div>
+              </FormStep>
 
               {/* 부양가족 수 */}
-              <div>
-                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-                  부양가족 수 (본인 포함) <span className="text-negative">*</span>
-                </label>
-                <input
-                  type="number"
-                  value={dependents}
-                  onChange={(e) => setDependents(Number(e.target.value))}
-                  min="1"
-                  className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
-                />
-                <p className="text-[12px] text-fg-muted mt-1.5">
-                  인적공제: {(dependents * 1500000).toLocaleString('ko-KR')} 원
-                </p>
-              </div>
-
-              {/* 20세 이하 자녀 */}
-              <div>
-                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-                  20세 이하 자녀 수
-                </label>
-                <input
-                  type="number"
-                  value={youngChildren}
-                  onChange={(e) => setYoungChildren(Number(e.target.value))}
-                  min="0"
-                  className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
-                />
-                <p className="text-[12px] text-fg-muted mt-1.5">추가 공제 대상</p>
-              </div>
-
-              {/* 비과세액 */}
-              <div>
-                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-                  월 비과세액
-                </label>
-                <div className="flex items-center gap-2">
+              <FormStep step={2} label="부양가족 수를 입력하세요" required completed={dependents >= 1}>
+                <div>
+                  <label className="block text-[13px] font-medium text-fg-secondary mb-2">
+                    부양가족 수 (본인 포함) <span className="text-negative">*</span>
+                  </label>
                   <input
                     type="number"
-                    value={nonTaxableAmount}
-                    onChange={(e) => setNonTaxableAmount(Number(e.target.value))}
+                    value={dependents}
+                    onChange={(e) => setDependents(Number(e.target.value))}
+                    min="1"
                     className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
                   />
-                  <span className="text-[13px] text-fg-muted">원</span>
+                  <p className="text-[12px] text-fg-muted mt-1.5">
+                    인적공제: {(dependents * 1500000).toLocaleString('ko-KR')} 원
+                  </p>
                 </div>
-                <p className="text-[12px] text-fg-muted mt-1.5">
-                  기본값: 200,000원 (식대)
-                </p>
-              </div>
+              </FormStep>
 
-              <button
-                onClick={handleCalculate}
-                className="w-full h-11 bg-accent hover:bg-accent-hover text-accent-fg font-medium rounded-xl transition-colors"
-              >
-                계산하기
-              </button>
+              {/* 20세 이하 자녀 */}
+              <FormStep step={3} label="20세 이하 자녀 수를 입력하세요" completed={true}>
+                <div>
+                  <label className="block text-[13px] font-medium text-fg-secondary mb-2">
+                    20세 이하 자녀 수
+                  </label>
+                  <input
+                    type="number"
+                    value={youngChildren}
+                    onChange={(e) => setYoungChildren(Number(e.target.value))}
+                    min="0"
+                    className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
+                  />
+                  <p className="text-[12px] text-fg-muted mt-1.5">추가 공제 대상</p>
+                </div>
+              </FormStep>
+
+              {/* 비과세액 */}
+              <FormStep step={4} label="월 비과세액을 입력하세요" completed={true}>
+                <div>
+                  <label className="block text-[13px] font-medium text-fg-secondary mb-2">
+                    월 비과세액
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      value={nonTaxableAmount}
+                      onChange={(e) => setNonTaxableAmount(Number(e.target.value))}
+                      className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
+                    />
+                    <span className="text-[13px] text-fg-muted">원</span>
+                  </div>
+                  <p className="text-[12px] text-fg-muted mt-1.5">
+                    기본값: 200,000원 (식대)
+                  </p>
+                </div>
+              </FormStep>
+
+              <div className="pl-[30px]">
+                <button
+                  onClick={handleCalculate}
+                  className="w-full h-11 bg-accent hover:bg-accent-hover text-accent-fg font-medium rounded-xl transition-colors"
+                >
+                  계산하기
+                </button>
+              </div>
             </div>
           </div>
         </div>

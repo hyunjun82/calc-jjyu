@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
+import { FormStep, FormProgress } from '@/components/FormStep';
 
 export default function ComprehensiveRealPropertyTaxCalculator() {
   const [ownerType, setOwnerType] = useState('single');
@@ -111,6 +112,25 @@ export default function ComprehensiveRealPropertyTaxCalculator() {
     });
   };
 
+  const totalSteps = ownerType === 'single'
+    ? 2 + 1 + (isElderly === 'yes' ? 1 : 0) + 1 + (isLongTermHolder === 'yes' ? 1 : 0)
+    : 2;
+
+  const completedSteps = (() => {
+    let count = 0;
+    if (ownerType) count++;
+    if (publicPrice) count++;
+    if (ownerType === 'single') {
+      if (isElderly) count++;
+      if (isElderly === 'yes' && elderlyAge) count++;
+      if (isLongTermHolder) count++;
+      if (isLongTermHolder === 'yes' && holdingYears) count++;
+    }
+    return count;
+  })();
+
+  let stepCounter = 0;
+
   return (
     <div className="mx-auto max-w-[1200px] px-6">
       {/* Breadcrumb */}
@@ -133,11 +153,10 @@ export default function ComprehensiveRealPropertyTaxCalculator() {
       {/* Form */}
       <div className="border border-border rounded-2xl bg-surface overflow-hidden mb-8">
         <div className="p-6 md:p-8">
+          <FormProgress current={completedSteps} total={totalSteps} />
+
           {/* 주택 유형 */}
-          <div className="mb-6">
-            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-              소유 유형
-            </label>
+          <FormStep step={stepCounter = 1} label="소유유형 선택" required completed={!!ownerType}>
             <div className="flex flex-wrap gap-2">
               {[
                 { val: 'single', label: '1세대 1주택자' },
@@ -158,13 +177,10 @@ export default function ComprehensiveRealPropertyTaxCalculator() {
                 </button>
               ))}
             </div>
-          </div>
+          </FormStep>
 
           {/* 공시가격 합계 */}
-          <div className="mb-6">
-            <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-              주택 공시가격 합계 (원) *
-            </label>
+          <FormStep step={stepCounter = 2} label="공시가격 입력" required completed={!!publicPrice}>
             <input
               type="number"
               value={publicPrice}
@@ -172,15 +188,12 @@ export default function ComprehensiveRealPropertyTaxCalculator() {
               className="w-full h-11 px-4 rounded-xl border border-border bg-surface text-[14px] text-fg placeholder:text-fg-muted outline-none focus:border-border-strong focus:shadow-[var(--shadow-sm)] transition-all"
               placeholder="0"
             />
-          </div>
+          </FormStep>
 
           {/* 고령자 공제 */}
           {ownerType === 'single' && (
             <>
-              <div className="mb-6">
-                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-                  고령자 공제 적용
-                </label>
+              <FormStep step={stepCounter = 3} label="고령자 공제 적용" required completed={!!isElderly}>
                 <div className="flex flex-wrap gap-2">
                   {[
                     { val: 'no', label: '아니오' },
@@ -200,13 +213,10 @@ export default function ComprehensiveRealPropertyTaxCalculator() {
                     </button>
                   ))}
                 </div>
-              </div>
+              </FormStep>
 
               {isElderly === 'yes' && (
-                <div className="mb-6">
-                  <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-                    나이
-                  </label>
+                <FormStep step={++stepCounter} label="나이 선택" required completed={!!elderlyAge}>
                   <select
                     value={elderlyAge}
                     onChange={(e) => setElderlyAge(e.target.value)}
@@ -216,14 +226,11 @@ export default function ComprehensiveRealPropertyTaxCalculator() {
                     <option value="65">65세~69세 (30% 공제)</option>
                     <option value="70">70세 이상 (40% 공제)</option>
                   </select>
-                </div>
+                </FormStep>
               )}
 
               {/* 장기보유 공제 */}
-              <div className="mb-6">
-                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-                  장기보유 공제 적용
-                </label>
+              <FormStep step={++stepCounter} label="장기보유 공제 적용" required completed={!!isLongTermHolder}>
                 <div className="flex flex-wrap gap-2">
                   {[
                     { val: 'no', label: '아니오' },
@@ -243,13 +250,10 @@ export default function ComprehensiveRealPropertyTaxCalculator() {
                     </button>
                   ))}
                 </div>
-              </div>
+              </FormStep>
 
               {isLongTermHolder === 'yes' && (
-                <div className="mb-6">
-                  <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-                    보유 기간
-                  </label>
+                <FormStep step={++stepCounter} label="보유 기간 선택" required completed={!!holdingYears}>
                   <select
                     value={holdingYears}
                     onChange={(e) => setHoldingYears(e.target.value)}
@@ -259,18 +263,20 @@ export default function ComprehensiveRealPropertyTaxCalculator() {
                     <option value="10">10년 이상 (40% 공제)</option>
                     <option value="15">15년 이상 (50% 공제)</option>
                   </select>
-                </div>
+                </FormStep>
               )}
             </>
           )}
 
           {/* Calculate Button */}
-          <button
-            onClick={handleCalculate}
-            className="w-full h-11 bg-accent hover:bg-accent-hover text-accent-fg font-medium rounded-xl transition-colors"
-          >
-            계산하기
-          </button>
+          <div className="pl-[30px]">
+            <button
+              onClick={handleCalculate}
+              className="w-full h-11 bg-accent hover:bg-accent-hover text-accent-fg font-medium rounded-xl transition-colors"
+            >
+              계산하기
+            </button>
+          </div>
         </div>
       </div>
 

@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
+import { FormStep, FormProgress } from '@/components/FormStep';
 
 interface DepositResult {
   principal: number;
@@ -101,11 +102,10 @@ export default function DepositCalculator() {
             <h2 className="text-[16px] font-semibold text-fg mb-5">계산 설정</h2>
 
             <div className="space-y-4">
+              <FormProgress current={[principal > 0, annualRate > 0, duration > 0, true, true].filter(Boolean).length} total={5} />
+
               {/* 예치금액 */}
-              <div>
-                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-                  예치금액 <span className="text-negative">*</span>
-                </label>
+              <FormStep step={1} label="예치금액" required completed={principal > 0}>
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
@@ -118,13 +118,10 @@ export default function DepositCalculator() {
                 <p className="text-[12px] text-fg-muted mt-1.5">
                   {principal.toLocaleString('ko-KR')} 원
                 </p>
-              </div>
+              </FormStep>
 
               {/* 연이율 */}
-              <div>
-                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-                  연이율 <span className="text-negative">*</span>
-                </label>
+              <FormStep step={2} label="연이율" required completed={annualRate > 0}>
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
@@ -135,13 +132,10 @@ export default function DepositCalculator() {
                   />
                   <span className="text-[13px] text-fg-muted">%</span>
                 </div>
-              </div>
+              </FormStep>
 
               {/* 예치기간 */}
-              <div>
-                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-                  예치기간 <span className="text-negative">*</span>
-                </label>
+              <FormStep step={3} label="예치기간" required completed={duration > 0}>
                 <select
                   value={duration}
                   onChange={(e) => setDuration(Number(e.target.value))}
@@ -154,13 +148,10 @@ export default function DepositCalculator() {
                   <option value={24}>24개월</option>
                   <option value={36}>36개월</option>
                 </select>
-              </div>
+              </FormStep>
 
               {/* 이자과세 */}
-              <div>
-                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-                  이자과세 <span className="text-negative">*</span>
-                </label>
+              <FormStep step={4} label="이자과세" required completed={true}>
                 <div className="flex flex-wrap gap-2">
                   {[
                     { value: 'general', label: '일반과세 (15.4%)' },
@@ -181,13 +172,10 @@ export default function DepositCalculator() {
                     </button>
                   ))}
                 </div>
-              </div>
+              </FormStep>
 
               {/* 이자지급방식 */}
-              <div>
-                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-                  이자지급방식 <span className="text-negative">*</span>
-                </label>
+              <FormStep step={5} label="이자지급방식" required completed={true}>
                 <div className="flex flex-wrap gap-2">
                   {[
                     { value: 'maturity', label: '만기일시지급' },
@@ -207,14 +195,16 @@ export default function DepositCalculator() {
                     </button>
                   ))}
                 </div>
-              </div>
+              </FormStep>
 
-              <button
-                onClick={handleCalculate}
-                className="w-full h-11 bg-accent hover:bg-accent-hover text-accent-fg font-medium rounded-xl transition-colors"
-              >
-                계산하기
-              </button>
+              <div className="pl-[30px]">
+                <button
+                  onClick={handleCalculate}
+                  className="w-full h-11 bg-accent hover:bg-accent-hover text-accent-fg font-medium rounded-xl transition-colors"
+                >
+                  계산하기
+                </button>
+              </div>
             </div>
           </div>
         </div>

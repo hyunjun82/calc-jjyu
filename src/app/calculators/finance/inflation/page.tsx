@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
+import { FormStep, FormProgress } from '@/components/FormStep';
 
 interface InflationYear {
   year: number;
@@ -91,11 +92,10 @@ export default function InflationCalculator() {
             <h2 className="text-[16px] font-semibold text-fg mb-5">계산 설정</h2>
 
             <div className="space-y-4">
+              <FormProgress current={[currentAmount > 0, inflationRate > 0, years > 0].filter(Boolean).length} total={3} />
+
               {/* 현재 금액 */}
-              <div>
-                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-                  현재 금액 <span className="text-negative">*</span>
-                </label>
+              <FormStep step={1} label="현재금액" required completed={currentAmount > 0}>
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
@@ -108,13 +108,10 @@ export default function InflationCalculator() {
                 <p className="text-[12px] text-fg-muted mt-1.5">
                   {currentAmount.toLocaleString('ko-KR')} 원
                 </p>
-              </div>
+              </FormStep>
 
               {/* 연간 물가상승률 */}
-              <div>
-                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-                  연간 물가상승률 <span className="text-negative">*</span>
-                </label>
+              <FormStep step={2} label="물가상승률" required completed={inflationRate > 0}>
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
@@ -126,13 +123,10 @@ export default function InflationCalculator() {
                   <span className="text-[13px] text-fg-muted">%</span>
                 </div>
                 <p className="text-[12px] text-fg-muted mt-1.5">기본값: 3% (한국 평균)</p>
-              </div>
+              </FormStep>
 
               {/* 기간 */}
-              <div>
-                <label className="block text-[13px] font-medium text-fg-secondary mb-2">
-                  기간 <span className="text-negative">*</span>
-                </label>
+              <FormStep step={3} label="기간" required completed={years > 0}>
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
@@ -142,14 +136,16 @@ export default function InflationCalculator() {
                   />
                   <span className="text-[13px] text-fg-muted">년</span>
                 </div>
-              </div>
+              </FormStep>
 
-              <button
-                onClick={handleCalculate}
-                className="w-full h-11 bg-accent hover:bg-accent-hover text-accent-fg font-medium rounded-xl transition-colors"
-              >
-                계산하기
-              </button>
+              <div className="pl-[30px]">
+                <button
+                  onClick={handleCalculate}
+                  className="w-full h-11 bg-accent hover:bg-accent-hover text-accent-fg font-medium rounded-xl transition-colors"
+                >
+                  계산하기
+                </button>
+              </div>
             </div>
           </div>
         </div>

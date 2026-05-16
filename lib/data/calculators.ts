@@ -23,9 +23,9 @@ export const CALCULATORS: CalcMeta[] = [
   // 세금
   { slug: '연봉-실수령액', name: '연봉 실수령액', desc: '세금·4대보험 차감 후 월 실수령', time: '30초', catSlug: '세금', catName: '세금', works: true },
   { slug: '종합소득세', name: '종합소득세', desc: '사업소득·근로소득 합산 누진', time: '60초', catSlug: '세금', catName: '세금', works: true },
-  { slug: '부가가치세', name: '부가가치세', desc: '매출·매입 부가세 정산', time: '45초', catSlug: '세금', catName: '세금', works: false },
-  { slug: '4대보험', name: '4대보험료', desc: '국민·건강·고용·산재', time: '20초', catSlug: '세금', catName: '세금', works: false },
-  { slug: '연말정산', name: '연말정산 환급', desc: '공제 반영 환급/추가납부', time: '90초', catSlug: '세금', catName: '세금', works: false },
+  { slug: '부가가치세', name: '부가가치세', desc: '매출·매입 부가세 정산', time: '45초', catSlug: '세금', catName: '세금', works: true },
+  { slug: '4대보험', name: '4대보험료', desc: '국민·건강·고용·산재', time: '20초', catSlug: '세금', catName: '세금', works: true },
+  { slug: '연말정산', name: '연말정산 환급', desc: '공제 반영 환급/추가납부', time: '90초', catSlug: '세금', catName: '세금', works: true },
   // 부동산
   { slug: '양도소득세', name: '양도소득세', desc: '1주택/다주택 보유기간별', time: '60초', catSlug: '부동산', catName: '부동산', works: true },
   { slug: '취득세', name: '취득세', desc: '주택 취득 시 세액', time: '30초', catSlug: '부동산', catName: '부동산', works: false },
@@ -48,10 +48,10 @@ export const CALCULATORS: CalcMeta[] = [
   { slug: '야간수당', name: '야간·연장수당', desc: '1.5배 가산', time: '30초', catSlug: '노동', catName: '노동', works: true },
   { slug: '통상임금', name: '통상임금', desc: '정기·일률·고정 합산', time: '30초', catSlug: '노동', catName: '노동', works: true },
   // 복지
-  { slug: '기초연금', name: '기초연금', desc: '만 65세 이상 수급액', time: '30초', catSlug: '복지', catName: '복지', works: false },
-  { slug: '국민연금', name: '국민연금 예상', desc: '납부기간별 예상 수령', time: '60초', catSlug: '복지', catName: '복지', works: false },
-  { slug: '건강보험료', name: '건강보험료', desc: '지역·직장 가입자별', time: '30초', catSlug: '복지', catName: '복지', works: false },
-  { slug: '기초생활수급', name: '기초생활수급', desc: '중위소득 기준', time: '45초', catSlug: '복지', catName: '복지', works: false },
+  { slug: '기초연금', name: '기초연금', desc: '만 65세 이상 수급액', time: '30초', catSlug: '복지', catName: '복지', works: true },
+  { slug: '국민연금', name: '국민연금 예상', desc: '납부기간별 예상 수령', time: '60초', catSlug: '복지', catName: '복지', works: true },
+  { slug: '건강보험료', name: '건강보험료', desc: '지역·직장 가입자별', time: '30초', catSlug: '복지', catName: '복지', works: true },
+  { slug: '기초생활수급', name: '기초생활수급', desc: '중위소득 기준', time: '45초', catSlug: '복지', catName: '복지', works: true },
   // 자동차
   { slug: '자동차세', name: '자동차세', desc: '배기량별 연 세액', time: '15초', catSlug: '자동차', catName: '자동차', works: false },
   { slug: '자동차-취득세', name: '자동차 취득세', desc: '신차·중고차', time: '20초', catSlug: '자동차', catName: '자동차', works: false },

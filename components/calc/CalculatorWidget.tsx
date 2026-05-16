@@ -22,6 +22,13 @@ const AnnualLeaveForm = dynamic(() => import('./forms/AnnualLeaveForm').then(m =
 const WeeklyHolidayForm = dynamic(() => import('./forms/WeeklyHolidayForm').then(m => m.WeeklyHolidayForm), { ssr: false });
 const OvertimeForm = dynamic(() => import('./forms/OvertimeForm').then(m => m.OvertimeForm), { ssr: false });
 const OrdinaryWageForm = dynamic(() => import('./forms/OrdinaryWageForm').then(m => m.OrdinaryWageForm), { ssr: false });
+const VATForm = dynamic(() => import('./forms/VATForm').then(m => m.VATForm), { ssr: false });
+const FourInsuranceForm = dynamic(() => import('./forms/FourInsuranceForm').then(m => m.FourInsuranceForm), { ssr: false });
+const YearEndTaxForm = dynamic(() => import('./forms/YearEndTaxForm').then(m => m.YearEndTaxForm), { ssr: false });
+const BasicPensionForm = dynamic(() => import('./forms/BasicPensionForm').then(m => m.BasicPensionForm), { ssr: false });
+const NationalPensionForm = dynamic(() => import('./forms/NationalPensionForm').then(m => m.NationalPensionForm), { ssr: false });
+const HealthInsuranceForm = dynamic(() => import('./forms/HealthInsuranceForm').then(m => m.HealthInsuranceForm), { ssr: false });
+const BasicLifeForm = dynamic(() => import('./forms/BasicLifeForm').then(m => m.BasicLifeForm), { ssr: false });
 
 export function CalculatorWidget({ slug }: { slug: string }) {
   const calc = getCalcBySlug(slug);
@@ -58,6 +65,13 @@ export function CalculatorWidget({ slug }: { slug: string }) {
       {slug === '주휴수당' && <WeeklyHolidayForm />}
       {slug === '야간수당' && <OvertimeForm />}
       {slug === '통상임금' && <OrdinaryWageForm />}
+      {slug === '부가가치세' && <VATForm />}
+      {slug === '4대보험' && <FourInsuranceForm />}
+      {slug === '연말정산' && <YearEndTaxForm />}
+      {slug === '기초연금' && <BasicPensionForm />}
+      {slug === '국민연금' && <NationalPensionForm />}
+      {slug === '건강보험료' && <HealthInsuranceForm />}
+      {slug === '기초생활수급' && <BasicLifeForm />}
     </div>
   );
 }

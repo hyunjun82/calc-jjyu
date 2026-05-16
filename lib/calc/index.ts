@@ -727,6 +727,279 @@ export function computeOvertime({
   };
 }
 
+// ============================================================
+// 세금·복지 (부가세, 4대보험, 연말정산, 기초연금, 국민연금, 건강보험, 기초생활)
+// ============================================================
+
+// 21) 부가가치세 (일반 10% / 간이과세 업종별)
+export function computeVAT({
+  salesMan = 5000, purchasesMan = 3000,
+  type = 'general' as 'general' | 'simple',
+  simpleRate = 15,  // 업종 부가율 (음식·숙박 15%, 도소매 10%, 제조 20%, 서비스 30%)
+}) {
+  const sales = salesMan * 10000;
+  const purchases = purchasesMan * 10000;
+  if (type === 'general') {
+    const salesVAT = sales * 0.1;
+    const purchaseVAT = purchases * 0.1;
+    const vat = salesVAT - purchaseVAT;
+    return {
+      type: 'general' as const,
+      salesVAT: Math.round(salesVAT),
+      purchaseVAT: Math.round(purchaseVAT),
+      vat: Math.round(vat),
+      refund: vat < 0,
+      effectiveRate: sales > 0 ? Math.abs(vat / sales) * 100 : 0,
+    };
+  } else {
+    const salesVAT = sales * (simpleRate / 100) * 0.1;
+    const purchaseVAT = purchases * 0.005;
+    const vat = Math.max(0, salesVAT - purchaseVAT);
+    return {
+      type: 'simple' as const,
+      salesVAT: Math.round(salesVAT),
+      purchaseVAT: Math.round(purchaseVAT),
+      vat: Math.round(vat),
+      refund: false,
+      effectiveRate: sales > 0 ? (vat / sales) * 100 : 0,
+    };
+  }
+}
+
+// 22) 4대보험료 (근로자/사업주 부담, 2026 요율)
+// 국민 4.5%/4.5%, 건보 3.545%/3.545%, 장기요양 건보×12.95%, 고용 0.9%/1.15%, 산재 평균 1.5%(사업주만)
+export function compute4Insurance({ monthlyWageMan = 300 }) {
+  const wage = monthlyWageMan * 10000;
+  const npBase = Math.min(6_170_000, Math.max(390_000, wage));
+  const npWorker = npBase * 0.045;
+  const npEmployer = npBase * 0.045;
+  const hiWorker = wage * 0.03545;
+  const hiEmployer = wage * 0.03545;
+  const ltcWorker = hiWorker * 0.1295;
+  const ltcEmployer = hiEmployer * 0.1295;
+  const eiWorker = wage * 0.009;
+  const eiEmployer = wage * 0.0115;  // 0.9% + 고용안정 0.25%
+  const wcEmployer = wage * 0.015;
+  const workerTotal = npWorker + hiWorker + ltcWorker + eiWorker;
+  const employerTotal = npEmployer + hiEmployer + ltcEmployer + eiEmployer + wcEmployer;
+  return {
+    npWorker: Math.round(npWorker), npEmployer: Math.round(npEmployer),
+    hiWorker: Math.round(hiWorker), hiEmployer: Math.round(hiEmployer),
+    ltcWorker: Math.round(ltcWorker), ltcEmployer: Math.round(ltcEmployer),
+    eiWorker: Math.round(eiWorker), eiEmployer: Math.round(eiEmployer),
+    wcEmployer: Math.round(wcEmployer),
+    workerTotal: Math.round(workerTotal),
+    employerTotal: Math.round(employerTotal),
+    grandTotal: Math.round(workerTotal + employerTotal),
+  };
+}
+
+// 23) 연말정산 (환급 / 추가납부 추정)
+export function computeYearEndTax({
+  annualSalaryMan = 5000,
+  withholdingMan = 250,
+  dependents = 1, children = 0,
+  creditCardMan = 1500, medicalMan = 100,
+  educationMan = 0, insuranceMan = 100, pensionMan = 0,
+}) {
+  const annual = annualSalaryMan * 10000;
+  const withheld = withholdingMan * 10000;
+
+  let earnDed = 0;
+  if (annual <= 5_000_000) earnDed = annual * 0.7;
+  else if (annual <= 15_000_000) earnDed = 3_500_000 + (annual - 5_000_000) * 0.4;
+  else if (annual <= 45_000_000) earnDed = 7_500_000 + (annual - 15_000_000) * 0.15;
+  else if (annual <= 100_000_000) earnDed = 12_000_000 + (annual - 45_000_000) * 0.05;
+  else earnDed = 14_750_000 + (annual - 100_000_000) * 0.02;
+  earnDed = Math.min(earnDed, 20_000_000);
+
+  const personalDed = 1_500_000 * (1 + dependents);
+  const cardThreshold = annual * 0.25;
+  const cardOver = Math.max(0, creditCardMan * 10000 - cardThreshold);
+  const cardDeduction = Math.min(3_000_000, cardOver * 0.15);
+  const insDeduction = Math.min(1_000_000, insuranceMan * 10000);
+  const insurance = annual * 0.08;  // 4대보험 추정
+
+  const taxBase = Math.max(0, annual - earnDed - personalDed - cardDeduction - insDeduction - insurance);
+
+  const brackets: Array<[number, number, number]> = [
+    [14_000_000, 0.06, 0], [50_000_000, 0.15, 1_260_000],
+    [88_000_000, 0.24, 5_760_000], [150_000_000, 0.35, 15_440_000],
+    [300_000_000, 0.38, 19_940_000], [500_000_000, 0.40, 25_940_000],
+    [1_000_000_000, 0.42, 35_940_000], [Infinity, 0.45, 65_940_000],
+  ];
+  let calculatedTax = 0;
+  for (const [limit, rate, deduct] of brackets) {
+    if (taxBase <= limit) { calculatedTax = taxBase * rate - deduct; break; }
+  }
+  calculatedTax = Math.max(0, calculatedTax);
+
+  const earnedCredit = Math.min(740_000, calculatedTax * 0.55);
+  let childCredit = 0;
+  if (children >= 1) childCredit += 250_000;
+  if (children >= 2) childCredit += 300_000;
+  if (children >= 3) childCredit += 400_000 * (children - 2);
+
+  const medThreshold = annual * 0.03;
+  const medOver = Math.max(0, medicalMan * 10000 - medThreshold);
+  const medCredit = medOver * 0.15;
+  const eduCredit = educationMan * 10000 * 0.15;
+  const pensionCredit = Math.min(900_000, pensionMan * 10000 * 0.12);
+
+  const totalCredits = earnedCredit + childCredit + medCredit + eduCredit + pensionCredit;
+  const finalTax = Math.max(0, calculatedTax - totalCredits);
+  const localTax = finalTax * 0.1;
+  const totalDue = finalTax + localTax;
+  const refund = withheld - totalDue;
+
+  return {
+    calculatedTax: Math.round(calculatedTax),
+    earnedCredit: Math.round(earnedCredit),
+    childCredit: Math.round(childCredit),
+    medCredit: Math.round(medCredit),
+    eduCredit: Math.round(eduCredit),
+    pensionCredit: Math.round(pensionCredit),
+    cardDeduction: Math.round(cardDeduction),
+    totalCredits: Math.round(totalCredits),
+    finalTax: Math.round(finalTax),
+    localTax: Math.round(localTax),
+    totalDue: Math.round(totalDue),
+    withheld: Math.round(withheld),
+    refund: Math.round(refund),
+    isRefund: refund > 0,
+  };
+}
+
+// 24) 기초연금 (2026: 단독 ~33.5만, 부부 ~53.6만)
+export function computeBasicPension({
+  age = 70, isCouple = false, monthlyIncomeMan = 100,
+}) {
+  const SINGLE_MAX = 334_810;
+  const COUPLE_MAX = 535_700;
+  const SINGLE_THRESHOLD = 2_280_000;
+  const COUPLE_THRESHOLD = 3_648_000;
+  if (age < 65) {
+    return { eligible: false, reason: '만 65세 이상만 신청 가능',
+      monthly: 0, annual: 0, threshold: SINGLE_THRESHOLD, maxPension: SINGLE_MAX };
+  }
+  const income = monthlyIncomeMan * 10000;
+  const threshold = isCouple ? COUPLE_THRESHOLD : SINGLE_THRESHOLD;
+  const maxPension = isCouple ? COUPLE_MAX : SINGLE_MAX;
+  if (income > threshold) {
+    return { eligible: false,
+      reason: `소득인정액 ${(income / 10000).toFixed(0)}만 > 선정기준 ${(threshold / 10000).toFixed(0)}만`,
+      monthly: 0, annual: 0, threshold, maxPension };
+  }
+  const ratio = income / threshold;
+  let monthly = maxPension;
+  if (ratio > 0.7) {
+    monthly = maxPension * (1 - (ratio - 0.7) * 0.5);
+  }
+  return {
+    eligible: true, reason: '수급 대상',
+    monthly: Math.round(monthly),
+    annual: Math.round(monthly * 12),
+    threshold, maxPension,
+  };
+}
+
+// 25) 국민연금 예상 노령연금 (10년 이상 가입 시)
+// 공식: (A + B) × 0.5 × (1 + 5% × (가입년-20))
+export function computeNationalPension({
+  avgMonthlyIncomeMan = 300, insuredMonths = 240,
+}) {
+  const insuredYears = insuredMonths / 12;
+  const A = 2_900_000;
+  const B = avgMonthlyIncomeMan * 10000;
+  if (insuredYears < 10) {
+    return { eligible: false, reason: '가입기간 10년 미만',
+      monthly: 0, annual: 0, insuredYears, A, B };
+  }
+  let formula = (A + B) * 0.5;
+  if (insuredYears >= 20) formula *= (1 + 0.05 * (insuredYears - 20));
+  else formula *= insuredYears / 20;
+  return {
+    eligible: true,
+    reason: `${insuredYears.toFixed(1)}년 가입`,
+    monthly: Math.round(formula),
+    annual: Math.round(formula * 12),
+    insuredYears: Math.round(insuredYears * 10) / 10,
+    A, B,
+  };
+}
+
+// 26) 건강보험료 (직장: 보수월액 × 3.545% / 지역: 점수제)
+export function computeHealthInsurance({
+  type = 'employee' as 'employee' | 'local',
+  monthlyWageMan = 300,
+  incomeMan = 0, propertyMan = 0,
+  vehicleYears = 0, carValueMan = 0,
+}) {
+  if (type === 'employee') {
+    const wage = monthlyWageMan * 10000;
+    const workerHI = wage * 0.03545;
+    const employerHI = wage * 0.03545;
+    const workerLTC = workerHI * 0.1295;
+    const employerLTC = employerHI * 0.1295;
+    return {
+      type: 'employee' as const,
+      workerHI: Math.round(workerHI), employerHI: Math.round(employerHI),
+      workerLTC: Math.round(workerLTC), employerLTC: Math.round(employerLTC),
+      workerTotal: Math.round(workerHI + workerLTC),
+      employerTotal: Math.round(employerHI + employerLTC),
+      grandTotal: Math.round(workerHI + employerHI + workerLTC + employerLTC),
+      totalPoint: 0, incomePoint: 0, propertyPoint: 0, carPoint: 0,
+    };
+  } else {
+    const POINT_RATE = 208;
+    const incomePoint = Math.max(0, Math.floor((incomeMan / 100) * 6.7));
+    const propertyPoint = Math.max(0, Math.floor(propertyMan * 0.05));
+    const carPoint = (vehicleYears >= 4 || carValueMan < 4000) ? 0
+      : Math.max(0, Math.floor(carValueMan / 100));
+    const totalPoint = incomePoint + propertyPoint + carPoint;
+    const monthlyHI = totalPoint * POINT_RATE;
+    const monthlyLTC = monthlyHI * 0.1295;
+    return {
+      type: 'local' as const,
+      workerHI: Math.round(monthlyHI), employerHI: 0,
+      workerLTC: Math.round(monthlyLTC), employerLTC: 0,
+      workerTotal: Math.round(monthlyHI + monthlyLTC),
+      employerTotal: 0,
+      grandTotal: Math.round(monthlyHI + monthlyLTC),
+      totalPoint, incomePoint, propertyPoint, carPoint,
+    };
+  }
+}
+
+// 27) 기초생활수급 (2026 중위소득 기준 4% 인상 가정)
+export function computeBasicLife({
+  householdSize = 1, monthlyIncomeMan = 50,
+}) {
+  const MEDIAN_INCOME: Record<number, number> = {
+    1: 2_415_000, 2: 3_989_000, 3: 5_104_000,
+    4: 6_205_000, 5: 7_277_000, 6: 8_321_000, 7: 9_346_000,
+  };
+  const median = MEDIAN_INCOME[Math.min(7, Math.max(1, householdSize))] || MEDIAN_INCOME[7];
+  const livingThreshold = median * 0.32;     // 생계 32%
+  const medicalThreshold = median * 0.40;
+  const housingThreshold = median * 0.48;
+  const educationThreshold = median * 0.50;
+  const income = monthlyIncomeMan * 10000;
+  const livingPay = income <= livingThreshold ? Math.max(0, livingThreshold - income) : 0;
+  return {
+    median: Math.round(median),
+    livingThreshold: Math.round(livingThreshold),
+    medicalThreshold: Math.round(medicalThreshold),
+    housingThreshold: Math.round(housingThreshold),
+    educationThreshold: Math.round(educationThreshold),
+    livingPay: Math.round(livingPay),
+    eligibleLiving: income <= livingThreshold,
+    eligibleMedical: income <= medicalThreshold,
+    eligibleHousing: income <= housingThreshold,
+    eligibleEducation: income <= educationThreshold,
+  };
+}
+
 // 20) 통상임금 (대법원 2013다89399 — 정기성·일률성·고정성)
 export function computeOrdinaryWage({
   basicSalaryMan = 250,

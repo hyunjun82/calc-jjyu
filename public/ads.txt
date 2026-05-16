@@ -1,0 +1,3 @@
+# 애드센스 ads.txt — 승인 후 본인 ID로 교체
+# 형식: domain, publisher_id, type, certification_authority
+google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0

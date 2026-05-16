@@ -1,0 +1,126 @@
+/* 와이어프레임 공통 스타일 — 저파이, 손그림 느낌, 회색조 */
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Patrick+Hand&family=Gaegu:wght@400;700&family=Nanum+Pen+Script&display=swap');
+
+.wf {
+  --ink: #1a1a1a;
+  --ink-soft: #4a4a4a;
+  --ink-faint: #8a8a8a;
+  --paper: #fafaf7;
+  --line: #c8c8c0;
+  --line-soft: #e2e2da;
+  --hl: #fff3a8;       /* 노란 형광펜 (포인트만) */
+  --accent: #d97757;   /* 따뜻한 주황, TOP 강조 */
+
+  font-family: 'Gaegu', 'Patrick Hand', system-ui;
+  color: var(--ink);
+  background: var(--paper);
+  letter-spacing: -0.01em;
+}
+
+.wf-hand { font-family: 'Caveat', cursive; }
+.wf-pen  { font-family: 'Nanum Pen Script', 'Patrick Hand', cursive; }
+.wf-mono { font-family: 'Patrick Hand', monospace; }
+
+/* 손으로 그린 보더 — 살짝 비뚤어진 느낌 */
+.wf-box {
+  border: 1.5px solid var(--ink);
+  border-radius: 6px 7px 5px 8px / 7px 5px 8px 6px;
+  background: var(--paper);
+}
+.wf-box-soft {
+  border: 1.2px dashed var(--line);
+  border-radius: 5px 7px 6px 8px / 7px 6px 8px 5px;
+}
+
+/* 해치 패턴 placeholder */
+.wf-hatch {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent 0,
+    transparent 6px,
+    var(--line) 6px,
+    var(--line) 7px
+  );
+}
+.wf-hatch-soft {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent 0,
+    transparent 8px,
+    var(--line-soft) 8px,
+    var(--line-soft) 9px
+  );
+}
+
+/* 형광펜 강조 */
+.wf-hl {
+  background: linear-gradient(180deg, transparent 55%, var(--hl) 55%, var(--hl) 90%, transparent 90%);
+  padding: 0 2px;
+}
+
+/* 점선 placeholder line */
+.wf-line {
+  height: 1.2px;
+  background-image: linear-gradient(to right, var(--ink-faint) 50%, transparent 50%);
+  background-size: 8px 1.2px;
+}
+.wf-line-thick {
+  height: 2px;
+  background-image: linear-gradient(to right, var(--ink-soft) 60%, transparent 60%);
+  background-size: 10px 2px;
+}
+
+/* 라벨/주석 */
+.wf-note {
+  font-family: 'Caveat', cursive;
+  color: var(--accent);
+  font-size: 16px;
+  transform: rotate(-2deg);
+}
+
+/* 화살표 */
+.wf-arrow { font-family: 'Caveat'; color: var(--accent); }
+
+/* 칩 */
+.wf-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px;
+  border: 1.2px solid var(--line);
+  border-radius: 999px;
+  font-size: 12px;
+  font-family: 'Patrick Hand';
+  color: var(--ink-soft);
+  background: var(--paper);
+}
+
+/* 카드 호버 표시용 화살표 */
+.wf-cta { color: var(--accent); font-family: 'Caveat'; font-size: 22px; }
+
+/* 스크린 라벨 (각 와이어프레임 우상단) */
+.wf-stamp {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  font-family: 'Caveat';
+  font-size: 22px;
+  color: var(--accent);
+  border: 1.5px solid var(--accent);
+  border-radius: 4px 8px 5px 7px;
+  padding: 2px 12px;
+  transform: rotate(2deg);
+  background: var(--paper);
+}
+
+/* 살짝 흔들리는 밑줄 (주석용) */
+.wf-squiggle {
+  text-decoration: underline wavy var(--accent);
+  text-underline-offset: 4px;
+}
+
+.wf-h1 { font-family: 'Nanum Pen Script'; font-weight: 400; letter-spacing: -0.02em; }
+.wf-h2 { font-family: 'Gaegu'; font-weight: 700; }
+
+/* 스크롤바 숨김 (artboard 내부 영역용) */
+.wf-noscroll::-webkit-scrollbar { display: none; }

@@ -1192,6 +1192,185 @@ export function computeLTVDTI({
   };
 }
 
+// ============================================================
+// 자동차 (자동차세, 자동차 취득세, 유류비, 과태료, 중고차 시세)
+// ============================================================
+
+// 33) 자동차세 (지방세법 127조, 비영업용 승용차)
+export function computeCarTax({
+  cc = 1600, yearsOwned = 3, isCommercial = false,
+}) {
+  let baseRate: number;
+  if (isCommercial) {
+    if (cc <= 1000) baseRate = 18;
+    else if (cc <= 1600) baseRate = 19;
+    else if (cc <= 2000) baseRate = 19;
+    else baseRate = 24;
+  } else {
+    if (cc <= 1000) baseRate = 80;
+    else if (cc <= 1600) baseRate = 140;
+    else baseRate = 200;
+  }
+  let annualTax = cc * baseRate;
+  let reduction = 0;
+  if (yearsOwned >= 3) reduction = Math.min(0.5, (yearsOwned - 2) * 0.05);
+  annualTax = annualTax * (1 - reduction);
+  const eduTax = annualTax * 0.3;
+  return {
+    annualTax: Math.round(annualTax),
+    eduTax: Math.round(eduTax),
+    total: Math.round(annualTax + eduTax),
+    half: Math.round((annualTax + eduTax) / 2),
+    reduction: reduction * 100,
+    baseRate,
+  };
+}
+
+// 34) 자동차 취득세 (지방세법 12조)
+// 비영업용 7%, 영업용 4%, 경차 4% + 50% 감면, 친환경 140만 한도 감면
+export function computeCarAcquisitionTax({
+  priceMan = 3000,
+  type = 'normal' as 'normal' | 'commercial' | 'light' | 'eco',
+}) {
+  const price = priceMan * 10000;
+  let rate = 0.07;
+  let breakdown = '비영업용 승용 7%';
+  if (type === 'commercial') { rate = 0.04; breakdown = '영업용 4%'; }
+  else if (type === 'light') { rate = 0.04; breakdown = '경차 4% (50% 감면)'; }
+  else if (type === 'eco') { rate = 0.07; breakdown = '친환경차 (140만 한도 감면)'; }
+
+  let tax = price * rate;
+  let discount = 0;
+  if (type === 'light') { discount = tax * 0.5; tax -= discount; }
+  if (type === 'eco') {
+    const ecoDiscount = Math.min(1_400_000, tax);
+    discount = ecoDiscount; tax -= discount;
+  }
+  return {
+    rate: rate * 100,
+    tax: Math.round(tax + discount),  // 원래 세액
+    discount: Math.round(discount),
+    total: Math.round(tax),
+    breakdown,
+  };
+}
+
+// 35) 유류비 (주행거리 / 연비 × 유가)
+export function computeFuelCost({
+  distanceKm = 1000, fuelEfficiency = 12, fuelPrice = 1700,
+  fuelType = 'gasoline' as 'gasoline' | 'diesel' | 'lpg' | 'electric',
+}) {
+  const fuelUsed = distanceKm / fuelEfficiency;
+  const cost = fuelUsed * fuelPrice;
+  return {
+    fuelUsed: Math.round(fuelUsed * 100) / 100,
+    cost: Math.round(cost),
+    perKm: Math.round((cost / distanceKm) * 100) / 100,
+    fuelType,
+  };
+}
+
+// 36) 과태료/범칙금 (도로교통법 시행령 별표)
+export function computeFine({
+  violation = 'signal' as 'signal' | 'speed20' | 'speed40' | 'speed60' | 'speed60plus' | 'parking' | 'seatbelt' | 'phone' | 'dui',
+  vehicleType = 'car' as 'car' | 'bike' | 'truck',
+  childZone = false,
+}) {
+  const TABLE: Record<string, number> = {
+    signal: 60_000, speed20: 40_000, speed40: 70_000,
+    speed60: 100_000, speed60plus: 130_000,
+    parking: 40_000, seatbelt: 30_000, phone: 60_000,
+    dui: 1_500_000,
+  };
+  const POINTS: Record<string, number> = {
+    signal: 15, speed20: 0, speed40: 15, speed60: 30, speed60plus: 60,
+    parking: 0, seatbelt: 0, phone: 15, dui: 100,
+  };
+  let fine = TABLE[violation] || 0;
+  let points = POINTS[violation] || 0;
+  if (childZone) { fine *= 2; points *= 2; }
+  if (vehicleType === 'truck' && violation !== 'dui') fine += 10_000;
+  if (vehicleType === 'bike' && violation !== 'dui') fine = Math.max(0, fine - 10_000);
+  return {
+    fine, points, violation, childZone,
+    note: childZone ? '어린이/노인 보호구역 2배 가산'
+      : violation === 'dui' ? '음주 0.03~0.08% 1차 (면허정지·형사처벌 별도)'
+      : '도로교통법 시행령 별표 기준',
+  };
+}
+
+// 37) 중고차 시세 (감가 모델)
+export function computeUsedCar({
+  newPriceMan = 3000, yearsOld = 3, kmDriven = 45000,
+}) {
+  const rateTable: Record<number, number> = {
+    0: 1.00, 1: 0.75, 2: 0.65, 3: 0.55, 4: 0.47, 5: 0.40,
+    6: 0.35, 7: 0.30, 8: 0.27, 9: 0.24, 10: 0.20,
+  };
+  let baseRate = yearsOld <= 10
+    ? (rateTable[Math.floor(yearsOld)] || 0.20)
+    : Math.max(0.05, 0.20 - (yearsOld - 10) * 0.02);
+
+  const expectedKm = yearsOld * 15000;
+  const kmDelta = kmDriven - expectedKm;
+  const kmAdjust = kmDelta > 0 ? -(kmDelta / 10000) * 0.03 : -(kmDelta / 10000) * 0.02;
+  const adjustedRate = Math.max(0.05, Math.min(1.0, baseRate + kmAdjust));
+
+  const newPrice = newPriceMan * 10000;
+  const estimated = newPrice * adjustedRate;
+  return {
+    newPrice,
+    estimatedPrice: Math.round(estimated),
+    estimatedMan: Math.round(estimated / 10000),
+    depreciation: Math.round(newPrice - estimated),
+    baseRate: Math.round(baseRate * 1000) / 10,
+    adjustedRate: Math.round(adjustedRate * 1000) / 10,
+    kmDelta,
+    note: kmDelta > 0
+      ? `주행거리 표준 대비 +${(kmDelta / 10000).toFixed(1)}만km (감액)`
+      : `주행거리 표준 대비 ${(kmDelta / 10000).toFixed(1)}만km (가산)`,
+  };
+}
+
+// ============================================================
+// 일상 보강: 환율 (2026 평균 환율, 한국은행 매매기준율 기반)
+// ============================================================
+export const EXCHANGE_RATES: Record<string, { rate: number; name: string; per?: number }> = {
+  USD: { rate: 1390, name: '미국 달러' },
+  EUR: { rate: 1510, name: '유로' },
+  JPY: { rate: 920, name: '일본 엔', per: 100 },
+  CNY: { rate: 192, name: '중국 위안' },
+  GBP: { rate: 1780, name: '영국 파운드' },
+  AUD: { rate: 905, name: '호주 달러' },
+  CAD: { rate: 1018, name: '캐나다 달러' },
+  HKD: { rate: 178, name: '홍콩 달러' },
+  THB: { rate: 41.5, name: '태국 바트' },
+  VND: { rate: 0.056, name: '베트남 동' },
+  SGD: { rate: 1043, name: '싱가포르 달러' },
+  CHF: { rate: 1580, name: '스위스 프랑' },
+};
+export const CURRENCIES = ['KRW', ...Object.keys(EXCHANGE_RATES)];
+
+export function convertCurrency({
+  from = 'USD', to = 'KRW', amount = 1,
+}: { from: string; to: string; amount: number }) {
+  const getRate = (code: string) => {
+    if (code === 'KRW') return { rate: 1, per: 1 };
+    const c = EXCHANGE_RATES[code];
+    return c ? { rate: c.rate, per: c.per || 1 } : { rate: 1, per: 1 };
+  };
+  const f = getRate(from);
+  const t = getRate(to);
+  // amount(from) → KRW → to
+  const krw = (amount / f.per) * f.rate;
+  const result = (krw / t.rate) * t.per;
+  return {
+    from, to, amount,
+    result: Math.round(result * 10000) / 10000,
+    rate: Math.round((f.rate / f.per / (t.rate / t.per)) * 10000) / 10000,
+  };
+}
+
 // 20) 통상임금 (대법원 2013다89399 — 정기성·일률성·고정성)
 export function computeOrdinaryWage({
   basicSalaryMan = 250,

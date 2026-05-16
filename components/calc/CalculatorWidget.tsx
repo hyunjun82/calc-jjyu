@@ -34,6 +34,12 @@ const RealEstateTaxForm = dynamic(() => import('./forms/RealEstateTaxForm').then
 const BrokerFeeForm = dynamic(() => import('./forms/BrokerFeeForm').then(m => m.BrokerFeeForm), { ssr: false });
 const JeonseConvertForm = dynamic(() => import('./forms/JeonseConvertForm').then(m => m.JeonseConvertForm), { ssr: false });
 const LTVDTIForm = dynamic(() => import('./forms/LTVDTIForm').then(m => m.LTVDTIForm), { ssr: false });
+const CarTaxForm = dynamic(() => import('./forms/CarTaxForm').then(m => m.CarTaxForm), { ssr: false });
+const CarAcquisitionTaxForm = dynamic(() => import('./forms/CarAcquisitionTaxForm').then(m => m.CarAcquisitionTaxForm), { ssr: false });
+const FuelCostForm = dynamic(() => import('./forms/FuelCostForm').then(m => m.FuelCostForm), { ssr: false });
+const FineForm = dynamic(() => import('./forms/FineForm').then(m => m.FineForm), { ssr: false });
+const UsedCarForm = dynamic(() => import('./forms/UsedCarForm').then(m => m.UsedCarForm), { ssr: false });
+const ExchangeForm = dynamic(() => import('./forms/ExchangeForm').then(m => m.ExchangeForm), { ssr: false });
 
 export function CalculatorWidget({ slug }: { slug: string }) {
   const calc = getCalcBySlug(slug);
@@ -82,6 +88,12 @@ export function CalculatorWidget({ slug }: { slug: string }) {
       {slug === '중개수수료' && <BrokerFeeForm />}
       {slug === '전월세-환산' && <JeonseConvertForm />}
       {slug === 'ltv-dti' && <LTVDTIForm />}
+      {slug === '자동차세' && <CarTaxForm />}
+      {slug === '자동차-취득세' && <CarAcquisitionTaxForm />}
+      {slug === '유류비' && <FuelCostForm />}
+      {slug === '과태료' && <FineForm />}
+      {slug === '중고차-시세' && <UsedCarForm />}
+      {slug === '환율' && <ExchangeForm />}
     </div>
   );
 }

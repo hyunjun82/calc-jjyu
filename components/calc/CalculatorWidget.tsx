@@ -13,6 +13,11 @@ const DDayForm = dynamic(() => import('./forms/DDayForm').then(m => m.DDayForm),
 const PregnancyForm = dynamic(() => import('./forms/PregnancyForm').then(m => m.PregnancyForm), { ssr: false });
 const CaloriesForm = dynamic(() => import('./forms/CaloriesForm').then(m => m.CaloriesForm), { ssr: false });
 const UnitForm = dynamic(() => import('./forms/UnitForm').then(m => m.UnitForm), { ssr: false });
+const CreditLoanForm = dynamic(() => import('./forms/CreditLoanForm').then(m => m.CreditLoanForm), { ssr: false });
+const JeonseLoanForm = dynamic(() => import('./forms/JeonseLoanForm').then(m => m.JeonseLoanForm), { ssr: false });
+const DSRForm = dynamic(() => import('./forms/DSRForm').then(m => m.DSRForm), { ssr: false });
+const DepositForm = dynamic(() => import('./forms/DepositForm').then(m => m.DepositForm), { ssr: false });
+const CompoundForm = dynamic(() => import('./forms/CompoundForm').then(m => m.CompoundForm), { ssr: false });
 
 export function CalculatorWidget({ slug }: { slug: string }) {
   const calc = getCalcBySlug(slug);
@@ -40,6 +45,11 @@ export function CalculatorWidget({ slug }: { slug: string }) {
       {slug === '임신주수' && <PregnancyForm />}
       {slug === '칼로리' && <CaloriesForm />}
       {slug === '단위변환' && <UnitForm />}
+      {slug === '신용대출' && <CreditLoanForm />}
+      {slug === '전세자금대출' && <JeonseLoanForm />}
+      {slug === 'dsr' && <DSRForm />}
+      {slug === '예적금-이자' && <DepositForm />}
+      {slug === '복리' && <CompoundForm />}
     </div>
   );
 }

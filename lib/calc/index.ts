@@ -478,3 +478,165 @@ export const UNIT_CATEGORIES = {
   temperature: ['°C', '°F', 'K'],
 };
 
+// ============================================================
+// 금융 (신용대출, 전세자금대출, DSR, 예적금이자, 복리)
+// ============================================================
+
+// 12) 신용대출 (원리금균등 상환)
+export function computeCreditLoan({
+  principalMan = 3000, rate = 6.5, years = 5,
+}) {
+  const principal = principalMan * 10000;
+  const r = rate / 100 / 12;
+  const n = years * 12;
+  const monthly = r === 0 ? principal / n
+    : principal * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+  const totalPayment = monthly * n;
+  const totalInterest = totalPayment - principal;
+  return {
+    monthly: Math.round(monthly),
+    totalPayment: Math.round(totalPayment),
+    totalInterest: Math.round(totalInterest),
+    principal,
+    interestRatio: (totalInterest / principal) * 100,
+  };
+}
+
+// 13) 전세자금대출 (정부 상품 한도 반영)
+// 버팀목 (만 19~34세, 연소득 5천만↓): 최대 1.2억 / 1.2~2.7%
+// 신혼부부 전용 (혼인 7년 이내): 최대 2.5억 / 1.2~2.7%
+// 일반 시중: 전세금의 80%
+export function computeJeonseLoan({
+  jeonseMan = 20000, rate = 3.5,
+  loanType = 'general' as 'general' | 'butimmok' | 'shinhon',
+}) {
+  const jeonse = jeonseMan * 10000;
+  let maxLimit: number;
+  if (loanType === 'butimmok') maxLimit = 120_000_000;
+  else if (loanType === 'shinhon') maxLimit = 250_000_000;
+  else maxLimit = jeonse * 0.8;
+  const loan = Math.min(maxLimit, jeonse * 0.8);
+  const monthlyInterest = loan * rate / 100 / 12;
+  return {
+    loan: Math.round(loan),
+    maxLimit: Math.round(maxLimit),
+    monthlyInterest: Math.round(monthlyInterest),
+    annualInterest: Math.round(monthlyInterest * 12),
+    ltv: jeonse > 0 ? Math.round((loan / jeonse) * 1000) / 10 : 0,
+  };
+}
+
+// 14) DSR (Debt Service Ratio — 금융위 기준 40%)
+export function computeDSR({
+  annualIncomeMan = 5000,
+  existingMonthlyMan = 50,
+  newPrincipalMan = 10000, newRate = 4.5, newYears = 30,
+}) {
+  const annualIncome = annualIncomeMan * 10000;
+  const monthlyIncome = annualIncome / 12;
+  const existingMonthly = existingMonthlyMan * 10000;
+  const newPrincipal = newPrincipalMan * 10000;
+  const r = newRate / 100 / 12;
+  const n = newYears * 12;
+  const newMonthly = r === 0 ? newPrincipal / n
+    : newPrincipal * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+  const totalMonthly = existingMonthly + newMonthly;
+  const dsr = (totalMonthly * 12) / annualIncome * 100;
+  const limit = 40;
+  const allowedAnnualDebt = annualIncome * limit / 100;
+  const remainingAnnual = allowedAnnualDebt - existingMonthly * 12;
+  return {
+    monthlyIncome: Math.round(monthlyIncome),
+    newMonthly: Math.round(newMonthly),
+    totalMonthly: Math.round(totalMonthly),
+    dsr: Math.round(dsr * 10) / 10,
+    passed: dsr <= limit,
+    overBy: dsr > limit ? Math.round((dsr - limit) * 10) / 10 : 0,
+    remainingMonthly: Math.round(Math.max(0, remainingAnnual / 12)),
+  };
+}
+
+// 15) 예·적금 이자 (세후, 이자소득세 15.4%)
+export function computeDeposit({
+  principalMan = 1000, rate = 3.5, months = 12,
+  type = 'deposit' as 'deposit' | 'saving',
+  compound = 'monthly' as 'monthly' | 'simple',
+  tax = 'normal' as 'normal' | 'tax_free',
+}) {
+  const principal = principalMan * 10000;
+  const taxRate = tax === 'normal' ? 0.154 : 0;
+  let totalPrincipal: number;
+  let interest: number;
+
+  if (type === 'deposit') {
+    totalPrincipal = principal;
+    if (compound === 'monthly') {
+      const mr = rate / 100 / 12;
+      interest = principal * Math.pow(1 + mr, months) - principal;
+    } else {
+      interest = principal * (rate / 100) * (months / 12);
+    }
+  } else {
+    // 적금: 월납입액 = principal
+    totalPrincipal = principal * months;
+    if (compound === 'monthly') {
+      const mr = rate / 100 / 12;
+      let total = 0;
+      for (let i = 1; i <= months; i++) {
+        total += principal * Math.pow(1 + mr, months - i + 1);
+      }
+      interest = total - totalPrincipal;
+    } else {
+      // 적금 단리 (한국 표준): 월별 예치기간 합 × 월이율
+      interest = principal * (rate / 100 / 12) * (months * (months + 1) / 2);
+    }
+  }
+
+  const taxAmount = interest * taxRate;
+  const afterTax = interest - taxAmount;
+  return {
+    totalPrincipal: Math.round(totalPrincipal),
+    interest: Math.round(interest),
+    tax: Math.round(taxAmount),
+    afterTax: Math.round(afterTax),
+    totalReceived: Math.round(totalPrincipal + afterTax),
+    effectiveRate: totalPrincipal > 0 ? (afterTax / totalPrincipal) * 100 : 0,
+  };
+}
+
+// 16) 복리 시뮬레이션 (초기금 + 월적립)
+export function computeCompound({
+  principalMan = 1000, monthlyMan = 50, rate = 7, years = 10,
+}) {
+  const principal = principalMan * 10000;
+  const monthly = monthlyMan * 10000;
+  const mr = rate / 100 / 12;
+  const n = years * 12;
+
+  const principalGrowth = mr === 0 ? principal : principal * Math.pow(1 + mr, n);
+  const monthlyGrowth = monthly === 0 ? 0
+    : mr === 0 ? monthly * n
+    : monthly * ((Math.pow(1 + mr, n) - 1) / mr);
+
+  const total = principalGrowth + monthlyGrowth;
+  const totalInvested = principal + monthly * n;
+  const totalGain = total - totalInvested;
+
+  const yearly: Array<{ year: number; total: number; invested: number }> = [];
+  for (let y = 1; y <= years; y++) {
+    const m = y * 12;
+    const pg = mr === 0 ? principal : principal * Math.pow(1 + mr, m);
+    const mg = monthly === 0 ? 0 : mr === 0 ? monthly * m
+      : monthly * ((Math.pow(1 + mr, m) - 1) / mr);
+    yearly.push({ year: y, total: Math.round(pg + mg), invested: principal + monthly * m });
+  }
+
+  return {
+    total: Math.round(total),
+    totalInvested: Math.round(totalInvested),
+    totalGain: Math.round(totalGain),
+    gainRatio: totalInvested > 0 ? (totalGain / totalInvested) * 100 : 0,
+    yearly,
+  };
+}
+

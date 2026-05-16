@@ -35,11 +35,11 @@ export const CALCULATORS: CalcMeta[] = [
   { slug: 'ltv-dti', name: 'LTV / DTI', desc: '주택 대출 한도 비율', time: '30초', catSlug: '부동산', catName: '부동산', works: false },
   // 금융
   { slug: '주택담보대출', name: '주택담보대출', desc: 'LTV/DSR 반영 한도', time: '30초', catSlug: '금융', catName: '금융·대출', works: true },
-  { slug: '신용대출', name: '신용대출', desc: '월 상환액·총이자', time: '20초', catSlug: '금융', catName: '금융·대출', works: false },
-  { slug: '전세자금대출', name: '전세자금대출', desc: '버팀목·신혼 한도', time: '30초', catSlug: '금융', catName: '금융·대출', works: false },
-  { slug: 'dsr', name: 'DSR 계산', desc: '총부채원리금상환비율', time: '45초', catSlug: '금융', catName: '금융·대출', works: false },
-  { slug: '예적금-이자', name: '예·적금 이자', desc: '단리·복리 만기 수령액', time: '15초', catSlug: '금융', catName: '금융·대출', works: false },
-  { slug: '복리', name: '복리 시뮬', desc: '장기 자산 성장', time: '20초', catSlug: '금융', catName: '금융·대출', works: false },
+  { slug: '신용대출', name: '신용대출', desc: '월 상환액·총이자', time: '20초', catSlug: '금융', catName: '금융·대출', works: true },
+  { slug: '전세자금대출', name: '전세자금대출', desc: '버팀목·신혼 한도', time: '30초', catSlug: '금융', catName: '금융·대출', works: true },
+  { slug: 'dsr', name: 'DSR 계산', desc: '총부채원리금상환비율', time: '45초', catSlug: '금융', catName: '금융·대출', works: true },
+  { slug: '예적금-이자', name: '예·적금 이자', desc: '단리·복리 만기 수령액', time: '15초', catSlug: '금융', catName: '금융·대출', works: true },
+  { slug: '복리', name: '복리 시뮬', desc: '장기 자산 성장', time: '20초', catSlug: '금융', catName: '금융·대출', works: true },
   // 노동
   { slug: '퇴직금', name: '퇴직금', desc: '법정 퇴직금 자동 계산', time: '30초', catSlug: '노동', catName: '노동', works: true },
   { slug: '실업급여', name: '실업급여', desc: '이직 사유·근속 기준', time: '45초', catSlug: '노동', catName: '노동', works: true },

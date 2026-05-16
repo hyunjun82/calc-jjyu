@@ -640,3 +640,115 @@ export function computeCompound({
   };
 }
 
+// ============================================================
+// 노동 (연차수당, 주휴수당, 야간·연장수당, 통상임금)
+// 근로기준법 + 대법원 판례 (전합 2013다89399) 기반
+// ============================================================
+
+// 17) 연차수당 (근로기준법 60조, 미사용 연차에 대한 수당)
+// 발생: 1년 만근 15일, 3년차부터 매 2년마다 +1일, 최대 25일
+export function computeAnnualLeave({
+  monthlyWageMan = 300,
+  weeklyHours = 40,
+  unusedDays = 5,
+  yearsServed = 3,
+}) {
+  let earnedDays: number;
+  if (yearsServed < 1) {
+    // 1년 미만은 월 1일씩 (최대 11일)
+    earnedDays = Math.min(11, Math.floor(yearsServed * 12));
+  } else {
+    earnedDays = Math.min(25, 15 + Math.floor((yearsServed - 1) / 2));
+  }
+  // 월 소정근로시간 = (주 + 주휴) × 4.345주
+  // 주 40시간 → 209시간 표준
+  const weeklyTotal = weeklyHours + Math.min(8, (weeklyHours / 40) * 8);
+  const monthlyHours = weeklyTotal * 4.345;
+  const hourly = (monthlyWageMan * 10000) / monthlyHours;
+  const dailyWage = hourly * 8;
+  const annualLeavePay = dailyWage * unusedDays;
+  return {
+    earnedDays, unusedDays,
+    hourly: Math.round(hourly),
+    dailyWage: Math.round(dailyWage),
+    annualLeavePay: Math.round(annualLeavePay),
+    monthlyHours: Math.round(monthlyHours),
+  };
+}
+
+// 18) 주휴수당 (근로기준법 55조 + 시행령 30조)
+// 주 15시간 이상 + 1주 소정근로일 만근 시 1주일에 1일분 유급휴일
+export function computeWeeklyHoliday({
+  hourlyWage = 10030,  // 2026 최저시급 10,030원
+  weeklyHours = 40,
+}) {
+  if (weeklyHours < 15) {
+    return {
+      eligible: false,
+      hourlyWage, weeklyHours,
+      holidayHours: 0, weeklyHoliday: 0, monthlyHoliday: 0,
+      message: '주 15시간 미만 — 주휴수당 대상 아님',
+    };
+  }
+  // 주휴시간 = 주 소정근로시간 / 40 × 8 (단, 최대 8시간)
+  const holidayHours = Math.min(8, (weeklyHours / 40) * 8);
+  const weekly = holidayHours * hourlyWage;
+  const monthly = weekly * 4.345;
+  return {
+    eligible: true,
+    hourlyWage, weeklyHours,
+    holidayHours: Math.round(holidayHours * 10) / 10,
+    weeklyHoliday: Math.round(weekly),
+    monthlyHoliday: Math.round(monthly),
+    message: `주 ${weeklyHours}시간 → 주 ${holidayHours.toFixed(1)}시간분 주휴수당`,
+  };
+}
+
+// 19) 야간·연장·휴일수당 (근로기준법 56조)
+// 연장: 1.5배 / 야간(22-06): +0.5배 가산 / 휴일 8시간 이내: 1.5배 / 휴일 8시간 초과: 2배
+export function computeOvertime({
+  hourlyWage = 12000,
+  overtimeHours = 0,
+  nightHours = 0,
+  holidayHours = 0,
+  holidayExtraHours = 0,
+}) {
+  const overtimePay = overtimeHours * hourlyWage * 1.5;
+  const nightPay = nightHours * hourlyWage * 0.5;
+  const holidayPay = holidayHours * hourlyWage * 1.5;
+  const holidayExtraPay = holidayExtraHours * hourlyWage * 2.0;
+  const total = overtimePay + nightPay + holidayPay + holidayExtraPay;
+  return {
+    overtimePay: Math.round(overtimePay),
+    nightPay: Math.round(nightPay),
+    holidayPay: Math.round(holidayPay),
+    holidayExtraPay: Math.round(holidayExtraPay),
+    total: Math.round(total),
+  };
+}
+
+// 20) 통상임금 (대법원 2013다89399 — 정기성·일률성·고정성)
+export function computeOrdinaryWage({
+  basicSalaryMan = 250,
+  fixedBonusMan = 30,
+  fixedAllowanceMan = 20,
+  variableAllowanceMan = 0,
+  weeklyHours = 40,
+}) {
+  const ordinaryMonthly = (basicSalaryMan + fixedBonusMan + fixedAllowanceMan) * 10000;
+  const weeklyTotal = weeklyHours + Math.min(8, (weeklyHours / 40) * 8);
+  const monthlyHours = weeklyTotal * 4.345;
+  const hourly = ordinaryMonthly / monthlyHours;
+  const daily = hourly * 8;
+  // 연장수당 단가 (1시간당)
+  const overtimeUnitWage = hourly * 1.5;
+  return {
+    ordinaryMonthly: Math.round(ordinaryMonthly),
+    hourly: Math.round(hourly),
+    daily: Math.round(daily),
+    monthlyHours: Math.round(monthlyHours),
+    excludedVariable: Math.round(variableAllowanceMan * 10000),
+    overtimeUnitWage: Math.round(overtimeUnitWage),
+  };
+}
+

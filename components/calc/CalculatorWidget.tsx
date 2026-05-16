@@ -18,6 +18,10 @@ const JeonseLoanForm = dynamic(() => import('./forms/JeonseLoanForm').then(m => 
 const DSRForm = dynamic(() => import('./forms/DSRForm').then(m => m.DSRForm), { ssr: false });
 const DepositForm = dynamic(() => import('./forms/DepositForm').then(m => m.DepositForm), { ssr: false });
 const CompoundForm = dynamic(() => import('./forms/CompoundForm').then(m => m.CompoundForm), { ssr: false });
+const AnnualLeaveForm = dynamic(() => import('./forms/AnnualLeaveForm').then(m => m.AnnualLeaveForm), { ssr: false });
+const WeeklyHolidayForm = dynamic(() => import('./forms/WeeklyHolidayForm').then(m => m.WeeklyHolidayForm), { ssr: false });
+const OvertimeForm = dynamic(() => import('./forms/OvertimeForm').then(m => m.OvertimeForm), { ssr: false });
+const OrdinaryWageForm = dynamic(() => import('./forms/OrdinaryWageForm').then(m => m.OrdinaryWageForm), { ssr: false });
 
 export function CalculatorWidget({ slug }: { slug: string }) {
   const calc = getCalcBySlug(slug);
@@ -50,6 +54,10 @@ export function CalculatorWidget({ slug }: { slug: string }) {
       {slug === 'dsr' && <DSRForm />}
       {slug === '예적금-이자' && <DepositForm />}
       {slug === '복리' && <CompoundForm />}
+      {slug === '연차수당' && <AnnualLeaveForm />}
+      {slug === '주휴수당' && <WeeklyHolidayForm />}
+      {slug === '야간수당' && <OvertimeForm />}
+      {slug === '통상임금' && <OrdinaryWageForm />}
     </div>
   );
 }

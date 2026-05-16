@@ -43,10 +43,10 @@ export const CALCULATORS: CalcMeta[] = [
   // 노동
   { slug: '퇴직금', name: '퇴직금', desc: '법정 퇴직금 자동 계산', time: '30초', catSlug: '노동', catName: '노동', works: true },
   { slug: '실업급여', name: '실업급여', desc: '이직 사유·근속 기준', time: '45초', catSlug: '노동', catName: '노동', works: true },
-  { slug: '연차수당', name: '연차수당', desc: '미사용 연차 수당', time: '20초', catSlug: '노동', catName: '노동', works: false },
-  { slug: '주휴수당', name: '주휴수당', desc: '주 15시간 이상 근로', time: '15초', catSlug: '노동', catName: '노동', works: false },
-  { slug: '야간수당', name: '야간·연장수당', desc: '1.5배 가산', time: '30초', catSlug: '노동', catName: '노동', works: false },
-  { slug: '통상임금', name: '통상임금', desc: '정기·일률·고정 합산', time: '30초', catSlug: '노동', catName: '노동', works: false },
+  { slug: '연차수당', name: '연차수당', desc: '미사용 연차 수당', time: '20초', catSlug: '노동', catName: '노동', works: true },
+  { slug: '주휴수당', name: '주휴수당', desc: '주 15시간 이상 근로', time: '15초', catSlug: '노동', catName: '노동', works: true },
+  { slug: '야간수당', name: '야간·연장수당', desc: '1.5배 가산', time: '30초', catSlug: '노동', catName: '노동', works: true },
+  { slug: '통상임금', name: '통상임금', desc: '정기·일률·고정 합산', time: '30초', catSlug: '노동', catName: '노동', works: true },
   // 복지
   { slug: '기초연금', name: '기초연금', desc: '만 65세 이상 수급액', time: '30초', catSlug: '복지', catName: '복지', works: false },
   { slug: '국민연금', name: '국민연금 예상', desc: '납부기간별 예상 수령', time: '60초', catSlug: '복지', catName: '복지', works: false },

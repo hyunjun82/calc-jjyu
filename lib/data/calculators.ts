@@ -59,12 +59,12 @@ export const CALCULATORS: CalcMeta[] = [
   { slug: '과태료', name: '과태료', desc: '위반 항목별 금액', time: '10초', catSlug: '자동차', catName: '자동차', works: false },
   { slug: '중고차-시세', name: '중고차 시세', desc: '연식·주행거리', time: '30초', catSlug: '자동차', catName: '자동차', works: false },
   // 일상
-  { slug: '단위변환', name: '단위 변환', desc: '길이·무게·온도·면적', time: '5초', catSlug: '일상', catName: '일상', works: false },
+  { slug: '단위변환', name: '단위 변환', desc: '길이·무게·온도·면적', time: '5초', catSlug: '일상', catName: '일상', works: true },
   { slug: '환율', name: '환율', desc: '실시간 주요국 통화', time: '5초', catSlug: '일상', catName: '일상', works: false },
-  { slug: '칼로리', name: '칼로리', desc: '음식·운동 칼로리', time: '10초', catSlug: '일상', catName: '일상', works: false },
-  { slug: 'bmi', name: 'BMI', desc: '체질량지수', time: '5초', catSlug: '일상', catName: '일상', works: false },
-  { slug: '임신주수', name: '임신 주수', desc: '마지막 생리일 기준', time: '10초', catSlug: '일상', catName: '일상', works: false },
-  { slug: '디데이', name: '디데이', desc: '생년월일·기념일', time: '5초', catSlug: '일상', catName: '일상', works: false },
+  { slug: '칼로리', name: '칼로리', desc: '음식·운동 칼로리', time: '10초', catSlug: '일상', catName: '일상', works: true },
+  { slug: 'bmi', name: 'BMI', desc: '체질량지수', time: '5초', catSlug: '일상', catName: '일상', works: true },
+  { slug: '임신주수', name: '임신 주수', desc: '마지막 생리일 기준', time: '10초', catSlug: '일상', catName: '일상', works: true },
+  { slug: '디데이', name: '디데이', desc: '생년월일·기념일', time: '5초', catSlug: '일상', catName: '일상', works: true },
 ];
 
 export const TOP6 = [

@@ -325,3 +325,156 @@ export function computeCapitalGains({
   };
 }
 
+// ============================================================
+// 일상 (BMI, 디데이, 임신주수, 칼로리, 단위변환)
+// ============================================================
+
+// 7) BMI (대한비만학회/WHO 아시아-태평양 기준)
+export function computeBMI({ heightCm = 170, weightKg = 65 }) {
+  const m = heightCm / 100;
+  const bmi = weightKg / (m * m);
+  let category: string;
+  let color: string;
+  if (bmi < 18.5) { category = '저체중'; color = '#5B83C2'; }
+  else if (bmi < 23) { category = '정상'; color = '#6B8E50'; }
+  else if (bmi < 25) { category = '과체중'; color = '#B5803C'; }
+  else if (bmi < 30) { category = '비만 1단계'; color = '#C2553C'; }
+  else if (bmi < 35) { category = '비만 2단계'; color = '#A0331E'; }
+  else { category = '비만 3단계 (고도)'; color = '#7A1810'; }
+  const normalMin = 18.5 * m * m;
+  const normalMax = 22.9 * m * m;
+  const idealMid = (normalMin + normalMax) / 2;
+  return {
+    bmi: Math.round(bmi * 10) / 10,
+    category, color,
+    normalMin: Math.round(normalMin * 10) / 10,
+    normalMax: Math.round(normalMax * 10) / 10,
+    diff: Math.round((weightKg - idealMid) * 10) / 10,
+  };
+}
+
+// 8) 디데이 / 디플러스 (밀리초 단위 정확 계산)
+export function computeDDay({ targetDate, baseDate }: { targetDate: string; baseDate?: string }) {
+  const base = baseDate ? new Date(baseDate + 'T00:00:00') : new Date(new Date().toISOString().slice(0, 10) + 'T00:00:00');
+  const target = new Date(targetDate + 'T00:00:00');
+  const diffMs = target.getTime() - base.getTime();
+  const days = Math.round(diffMs / 86400000);
+  const abs = Math.abs(days);
+  return {
+    days: abs,
+    direction: days > 0 ? 'future' : days < 0 ? 'past' : 'today',
+    label: days === 0 ? 'D-DAY' : days > 0 ? `D-${abs}` : `D+${abs}`,
+    weeks: Math.floor(abs / 7),
+    weeksRest: abs % 7,
+    months: Math.floor(abs / 30),
+    years: Math.floor(abs / 365),
+    targetWeekday: ['일', '월', '화', '수', '목', '금', '토'][target.getDay()],
+  };
+}
+
+// 9) 임신 주수 (Naegele's rule: LMP + 280일 = 출산예정일)
+export function computePregnancy({ lmpDate }: { lmpDate: string }) {
+  const lmp = new Date(lmpDate + 'T00:00:00');
+  const today = new Date(new Date().toISOString().slice(0, 10) + 'T00:00:00');
+  const totalDays = Math.floor((today.getTime() - lmp.getTime()) / 86400000);
+  const weeks = Math.floor(totalDays / 7);
+  const days = totalDays % 7;
+  const due = new Date(lmp.getTime() + 280 * 86400000);
+  const daysToDue = Math.floor((due.getTime() - today.getTime()) / 86400000);
+  let trimester: string;
+  if (weeks < 13) trimester = '1삼분기 (초기)';
+  else if (weeks < 27) trimester = '2삼분기 (중기)';
+  else trimester = '3삼분기 (후기)';
+  return {
+    weeks, days, totalDays,
+    label: `${weeks}주 ${days}일`,
+    trimester,
+    dueDate: due.toISOString().slice(0, 10),
+    dueDateKr: `${due.getFullYear()}년 ${due.getMonth() + 1}월 ${due.getDate()}일`,
+    daysToDue,
+    progress: Math.max(0, Math.min(100, (totalDays / 280) * 100)),
+  };
+}
+
+// 10) 칼로리 (Mifflin-St Jeor BMR + TDEE — 대한비만학회 권장)
+export function computeCalories({
+  sex = 'male', age = 30, heightCm = 170, weightKg = 65,
+  activity = 1.55, goal = 'maintain',
+}: {
+  sex?: 'male' | 'female';
+  age?: number;
+  heightCm?: number;
+  weightKg?: number;
+  activity?: number;
+  goal?: 'lose' | 'maintain' | 'gain';
+}) {
+  const bmr = sex === 'male'
+    ? 10 * weightKg + 6.25 * heightCm - 5 * age + 5
+    : 10 * weightKg + 6.25 * heightCm - 5 * age - 161;
+  const tdee = bmr * activity;
+  const targetCal = goal === 'lose' ? tdee - 500 : goal === 'gain' ? tdee + 500 : tdee;
+  // 단백질 30% / 탄수화물 40% / 지방 30% (단백질·탄수 4kcal/g, 지방 9kcal/g)
+  const protein = Math.round((targetCal * 0.3) / 4);
+  const carbs = Math.round((targetCal * 0.4) / 4);
+  const fat = Math.round((targetCal * 0.3) / 9);
+  // 체중 변화 예측 (1kg = 7700kcal)
+  const weeklyKg = goal === 'maintain' ? 0 : (goal === 'lose' ? -500 : 500) * 7 / 7700;
+  return {
+    bmr: Math.round(bmr),
+    tdee: Math.round(tdee),
+    targetCal: Math.round(targetCal),
+    protein, carbs, fat,
+    weeklyKg: Math.round(weeklyKg * 100) / 100,
+  };
+}
+
+// 11) 단위 변환 (SI 표준 + 한국 전통 단위)
+const UNIT_DEFS: Record<string, Record<string, number>> = {
+  length: {
+    'mm': 0.001, 'cm': 0.01, 'm': 1, 'km': 1000,
+    'inch': 0.0254, 'ft': 0.3048, 'yd': 0.9144, 'mi': 1609.344,
+    '척': 0.30303, '리': 392.727,
+  },
+  weight: {
+    'mg': 0.000001, 'g': 0.001, 'kg': 1, 't': 1000,
+    'oz': 0.028349523125, 'lb': 0.45359237,
+    '근': 0.6, '돈': 0.00375, '냥': 0.0375, '관': 3.75,
+  },
+  area: {
+    'cm²': 0.0001, 'm²': 1, 'km²': 1000000, 'ha': 10000,
+    '평': 3.3057851239, '에이커': 4046.8564224,
+  },
+  volume: {
+    'mL': 0.001, 'L': 1, 'm³': 1000,
+    '되': 1.8039, '말': 18.039, '홉': 0.18039,
+    'gal_us': 3.785411784, 'fl_oz': 0.0295735296,
+  },
+};
+
+export function convertUnit({
+  category, from, to, value = 1,
+}: { category: string; from: string; to: string; value?: number }) {
+  if (category === 'temperature') {
+    let c = value;
+    if (from === '°F') c = (value - 32) * 5 / 9;
+    else if (from === 'K') c = value - 273.15;
+    let out = c;
+    if (to === '°F') out = c * 9 / 5 + 32;
+    else if (to === 'K') out = c + 273.15;
+    return { result: Math.round(out * 1000) / 1000 };
+  }
+  const defs = UNIT_DEFS[category];
+  if (!defs || !(from in defs) || !(to in defs)) return { result: 0 };
+  const baseValue = value * defs[from];
+  const out = baseValue / defs[to];
+  return { result: Math.round(out * 1000000) / 1000000 };
+}
+
+export const UNIT_CATEGORIES = {
+  length: ['mm', 'cm', 'm', 'km', 'inch', 'ft', 'yd', 'mi', '척', '리'],
+  weight: ['mg', 'g', 'kg', 't', 'oz', 'lb', '근', '돈', '냥', '관'],
+  area: ['cm²', 'm²', 'km²', 'ha', '평', '에이커'],
+  volume: ['mL', 'L', 'm³', '되', '말', '홉', 'gal_us', 'fl_oz'],
+  temperature: ['°C', '°F', 'K'],
+};
+

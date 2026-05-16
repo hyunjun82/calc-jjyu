@@ -8,6 +8,11 @@ const MortgageForm = dynamic(() => import('./forms/MortgageForm').then(m => m.Mo
 const IncomeTaxForm = dynamic(() => import('./forms/IncomeTaxForm').then(m => m.IncomeTaxForm), { ssr: false });
 const UnemploymentForm = dynamic(() => import('./forms/UnemploymentForm').then(m => m.UnemploymentForm), { ssr: false });
 const CapitalGainsForm = dynamic(() => import('./forms/CapitalGainsForm').then(m => m.CapitalGainsForm), { ssr: false });
+const BMIForm = dynamic(() => import('./forms/BMIForm').then(m => m.BMIForm), { ssr: false });
+const DDayForm = dynamic(() => import('./forms/DDayForm').then(m => m.DDayForm), { ssr: false });
+const PregnancyForm = dynamic(() => import('./forms/PregnancyForm').then(m => m.PregnancyForm), { ssr: false });
+const CaloriesForm = dynamic(() => import('./forms/CaloriesForm').then(m => m.CaloriesForm), { ssr: false });
+const UnitForm = dynamic(() => import('./forms/UnitForm').then(m => m.UnitForm), { ssr: false });
 
 export function CalculatorWidget({ slug }: { slug: string }) {
   const calc = getCalcBySlug(slug);
@@ -30,6 +35,11 @@ export function CalculatorWidget({ slug }: { slug: string }) {
       {slug === '종합소득세' && <IncomeTaxForm />}
       {slug === '실업급여' && <UnemploymentForm />}
       {slug === '양도소득세' && <CapitalGainsForm />}
+      {slug === 'bmi' && <BMIForm />}
+      {slug === '디데이' && <DDayForm />}
+      {slug === '임신주수' && <PregnancyForm />}
+      {slug === '칼로리' && <CaloriesForm />}
+      {slug === '단위변환' && <UnitForm />}
     </div>
   );
 }

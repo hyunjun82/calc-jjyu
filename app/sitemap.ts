@@ -2,6 +2,8 @@ import type { MetadataRoute } from 'next';
 import { CALCULATORS, CATEGORIES } from '@/lib/data/calculators';
 import { SITE } from '@/lib/format';
 
+export const dynamic = 'force-static';
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
   return [

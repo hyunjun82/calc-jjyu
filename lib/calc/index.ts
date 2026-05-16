@@ -76,7 +76,9 @@ export function computeSalary({ annualMan = 5000, dependents = 1, children = 0, 
 // 법정 퇴직금 = 1일 평균임금 × 30 × (재직일수 / 365)
 // 1일 평균임금 = 최근 3개월 임금총액 / 3개월 일수 (단순화: 월급 기준)
 export function computeSeverance({ avgMonthlyMan = 350, yearsServed = 5, monthsServed = 0 }) {
-  const avgDaily = (avgMonthlyMan * 10000 * 3) / 90; // 단순: 월급 3개월 / 90일
+  // 1일 평균임금 = 최근 3개월 임금총액 / 3개월 일수 (보통 91~92일)
+  // 정확도 위해 91일 사용 (3개월 평균 90.5~92일)
+  const avgDaily = (avgMonthlyMan * 10000 * 3) / 91;
   const days = Math.round(yearsServed * 365 + monthsServed * 30);
   const severance = avgDaily * 30 * (days / 365);
   // 퇴직소득세 (간이) — 퇴직금 × 0.5% (실제는 복잡, 표시용)

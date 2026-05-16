@@ -29,6 +29,11 @@ const BasicPensionForm = dynamic(() => import('./forms/BasicPensionForm').then(m
 const NationalPensionForm = dynamic(() => import('./forms/NationalPensionForm').then(m => m.NationalPensionForm), { ssr: false });
 const HealthInsuranceForm = dynamic(() => import('./forms/HealthInsuranceForm').then(m => m.HealthInsuranceForm), { ssr: false });
 const BasicLifeForm = dynamic(() => import('./forms/BasicLifeForm').then(m => m.BasicLifeForm), { ssr: false });
+const AcquisitionTaxForm = dynamic(() => import('./forms/AcquisitionTaxForm').then(m => m.AcquisitionTaxForm), { ssr: false });
+const RealEstateTaxForm = dynamic(() => import('./forms/RealEstateTaxForm').then(m => m.RealEstateTaxForm), { ssr: false });
+const BrokerFeeForm = dynamic(() => import('./forms/BrokerFeeForm').then(m => m.BrokerFeeForm), { ssr: false });
+const JeonseConvertForm = dynamic(() => import('./forms/JeonseConvertForm').then(m => m.JeonseConvertForm), { ssr: false });
+const LTVDTIForm = dynamic(() => import('./forms/LTVDTIForm').then(m => m.LTVDTIForm), { ssr: false });
 
 export function CalculatorWidget({ slug }: { slug: string }) {
   const calc = getCalcBySlug(slug);
@@ -72,6 +77,11 @@ export function CalculatorWidget({ slug }: { slug: string }) {
       {slug === '국민연금' && <NationalPensionForm />}
       {slug === '건강보험료' && <HealthInsuranceForm />}
       {slug === '기초생활수급' && <BasicLifeForm />}
+      {slug === '취득세' && <AcquisitionTaxForm />}
+      {slug === '종합부동산세' && <RealEstateTaxForm />}
+      {slug === '중개수수료' && <BrokerFeeForm />}
+      {slug === '전월세-환산' && <JeonseConvertForm />}
+      {slug === 'ltv-dti' && <LTVDTIForm />}
     </div>
   );
 }

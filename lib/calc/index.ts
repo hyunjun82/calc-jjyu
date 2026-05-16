@@ -1000,6 +1000,198 @@ export function computeBasicLife({
   };
 }
 
+// ============================================================
+// 부동산 (취득세, 종부세, 중개수수료, 전월세 환산, LTV/DTI)
+// ============================================================
+
+// 28) 취득세 (지방세법 11조 — 주택)
+// 6억↓ 1%, 6~9억 선형 1~3%, 9억↑ 3%
+// 2주택 8%, 3주택↑ 12% (조정대상지역에서 2주택도 12%)
+export function computeAcquisitionTax({
+  housePriceMan = 50000,
+  housesOwned = 1,
+  isAdjusted = false,
+  type = 'house' as 'house' | 'land',
+}) {
+  const price = housePriceMan * 10000;
+  let rate = 0;
+  let breakdown = '';
+
+  if (type === 'land') {
+    rate = 0.04; breakdown = '토지 4%';
+  } else if (housesOwned >= 3 || (housesOwned === 2 && isAdjusted)) {
+    rate = 0.12; breakdown = '다주택 중과 12%';
+  } else if (housesOwned === 2) {
+    rate = 0.08; breakdown = '2주택 8%';
+  } else {
+    if (price <= 600_000_000) { rate = 0.01; breakdown = '6억↓ 1%'; }
+    else if (price <= 900_000_000) {
+      // 6~9억 선형: rate = (price/9억 × 2 - 3)/100 보정
+      rate = ((price * 2) / 300_000_000 - 3) / 100;
+      breakdown = '6~9억 선형';
+    }
+    else { rate = 0.03; breakdown = '9억↑ 3%'; }
+  }
+
+  const acquisitionTax = price * rate;
+  const farmTax = type === 'house' && rate >= 0.02 ? acquisitionTax * 0.1 : 0;
+  const eduTax = acquisitionTax * (rate <= 0.01 ? 0.1 : 0.2);
+  const total = acquisitionTax + farmTax + eduTax;
+
+  return {
+    rate: Math.round(rate * 10000) / 100,
+    acquisitionTax: Math.round(acquisitionTax),
+    farmTax: Math.round(farmTax),
+    eduTax: Math.round(eduTax),
+    total: Math.round(total),
+    breakdown,
+  };
+}
+
+// 29) 종합부동산세 (1주택 12억 / 다주택 9억 기본공제)
+// 공정시장가액비율 60% × 누진세율
+export function computeRealEstateTax({
+  publicPriceMan = 50000, isMulti = false,
+}) {
+  const publicPrice = publicPriceMan * 10000;
+  const deduction = isMulti ? 900_000_000 : 1_200_000_000;
+  const fairRate = 0.60;
+  const taxableBase = Math.max(0, (publicPrice - deduction) * fairRate);
+
+  const brackets1: Array<[number, number, number]> = [
+    [300_000_000, 0.005, 0],
+    [600_000_000, 0.007, 600_000],
+    [1_200_000_000, 0.010, 2_400_000],
+    [5_000_000_000, 0.013, 6_000_000],
+    [9_400_000_000, 0.015, 16_000_000],
+    [Infinity, 0.027, 30_000_000],
+  ];
+  const brackets2: Array<[number, number, number]> = [
+    [300_000_000, 0.005, 0],
+    [600_000_000, 0.007, 600_000],
+    [1_200_000_000, 0.010, 2_400_000],
+    [5_000_000_000, 0.020, 14_400_000],
+    [9_400_000_000, 0.030, 64_400_000],
+    [Infinity, 0.050, 252_400_000],
+  ];
+
+  const brackets = isMulti ? brackets2 : brackets1;
+  let tax = 0, appliedRate = 0;
+  for (const [limit, rate, deduct] of brackets) {
+    if (taxableBase <= limit) {
+      tax = Math.max(0, taxableBase * rate - deduct);
+      appliedRate = rate;
+      break;
+    }
+  }
+  const farmTax = tax * 0.2;
+  return {
+    publicPrice, deduction,
+    taxableBase: Math.round(taxableBase),
+    tax: Math.round(tax),
+    farmTax: Math.round(farmTax),
+    total: Math.round(tax + farmTax),
+    appliedRate: appliedRate * 100,
+    eligible: publicPrice > deduction,
+  };
+}
+
+// 30) 중개수수료 (공인중개사법 시행규칙 — 법정 상한)
+export function computeBrokerFee({
+  priceMan = 50000,
+  type = 'sale' as 'sale' | 'jeonse' | 'wolse',
+  monthlyMan = 0, depositMan = 0,
+}) {
+  let price = priceMan * 10000;
+  if (type === 'wolse') price = depositMan * 10000 + monthlyMan * 10000 * 100;
+
+  let rate = 0, cap = Infinity;
+  if (type === 'sale') {
+    if (price < 50_000_000) { rate = 0.006; cap = 250_000; }
+    else if (price < 200_000_000) { rate = 0.005; cap = 800_000; }
+    else if (price < 900_000_000) rate = 0.004;
+    else if (price < 1_200_000_000) rate = 0.005;
+    else if (price < 1_500_000_000) rate = 0.006;
+    else rate = 0.007;
+  } else {
+    if (price < 50_000_000) { rate = 0.005; cap = 200_000; }
+    else if (price < 100_000_000) { rate = 0.004; cap = 300_000; }
+    else if (price < 600_000_000) rate = 0.003;
+    else if (price < 1_200_000_000) rate = 0.004;
+    else if (price < 1_500_000_000) rate = 0.005;
+    else rate = 0.006;
+  }
+
+  const calculatedFee = price * rate;
+  const fee = Math.min(cap, calculatedFee);
+  const vat = fee * 0.1;
+  return {
+    price,
+    rate: rate * 100,
+    calculatedFee: Math.round(calculatedFee),
+    cap: cap === Infinity ? 0 : cap,
+    fee: Math.round(fee),
+    vat: Math.round(vat),
+    total: Math.round(fee + vat),
+    note: cap !== Infinity && calculatedFee > cap ? `상한 ${(cap / 10000).toFixed(0)}만원 적용` : '비율 적용',
+  };
+}
+
+// 31) 전월세 환산 (전월세전환율 = 기준금리 + 2%, 2026 ~5%)
+export function computeJeonseConvert({
+  mode = 'jeonseToWolse' as 'jeonseToWolse' | 'wolseToJeonse',
+  jeonseMan = 30000, depositMan = 5000, monthlyMan = 100,
+  conversionRate = 5,
+}) {
+  if (mode === 'jeonseToWolse') {
+    const jeonse = jeonseMan * 10000;
+    const deposit = depositMan * 10000;
+    const monthlyRent = Math.max(0, ((jeonse - deposit) * (conversionRate / 100)) / 12);
+    return {
+      mode, jeonse, deposit,
+      monthlyRent: Math.round(monthlyRent),
+      conversionRate,
+      formula: `(${(jeonse / 10000).toFixed(0)}만 − ${(deposit / 10000).toFixed(0)}만) × ${conversionRate}% ÷ 12`,
+    };
+  } else {
+    const deposit = depositMan * 10000;
+    const monthly = monthlyMan * 10000;
+    const jeonse = deposit + (monthly * 12 / (conversionRate / 100));
+    return {
+      mode, deposit,
+      monthlyRent: monthly,
+      jeonse: Math.round(jeonse),
+      conversionRate,
+      formula: `${(deposit / 10000).toFixed(0)}만 + (${(monthly / 10000).toFixed(0)}만 × 12 ÷ ${conversionRate}%)`,
+    };
+  }
+}
+
+// 32) LTV / DTI 주택대출 한도
+export function computeLTVDTI({
+  housePriceMan = 50000, annualIncomeMan = 6000,
+  ltv = 70, dti = 60, rate = 4.5, years = 30,
+}) {
+  const housePrice = housePriceMan * 10000;
+  const annualIncome = annualIncomeMan * 10000;
+  const limitLtv = housePrice * (ltv / 100);
+  const monthlyMax = annualIncome * (dti / 100) / 12;
+  const r = rate / 100 / 12;
+  const n = years * 12;
+  const limitDti = monthlyMax * (1 - Math.pow(1 + r, -n)) / r;
+  const finalLimit = Math.min(limitLtv, limitDti);
+  const monthlyPayment = finalLimit * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+  return {
+    limitLtv: Math.round(limitLtv),
+    limitDti: Math.round(limitDti),
+    finalLimit: Math.round(finalLimit),
+    monthlyPayment: Math.round(monthlyPayment),
+    bottleneck: limitLtv < limitDti ? 'LTV' : 'DTI',
+    actualLTV: housePrice > 0 ? Math.round((finalLimit / housePrice) * 1000) / 10 : 0,
+    actualDTI: annualIncome > 0 ? Math.round((monthlyPayment * 12 / annualIncome) * 1000) / 10 : 0,
+  };
+}
+
 // 20) 통상임금 (대법원 2013다89399 — 정기성·일률성·고정성)
 export function computeOrdinaryWage({
   basicSalaryMan = 250,

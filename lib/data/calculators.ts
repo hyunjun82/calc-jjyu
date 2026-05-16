@@ -28,11 +28,11 @@ export const CALCULATORS: CalcMeta[] = [
   { slug: '연말정산', name: '연말정산 환급', desc: '공제 반영 환급/추가납부', time: '90초', catSlug: '세금', catName: '세금', works: true },
   // 부동산
   { slug: '양도소득세', name: '양도소득세', desc: '1주택/다주택 보유기간별', time: '60초', catSlug: '부동산', catName: '부동산', works: true },
-  { slug: '취득세', name: '취득세', desc: '주택 취득 시 세액', time: '30초', catSlug: '부동산', catName: '부동산', works: false },
-  { slug: '종합부동산세', name: '종합부동산세', desc: '공시가격 기준 종부세', time: '45초', catSlug: '부동산', catName: '부동산', works: false },
-  { slug: '중개수수료', name: '중개수수료', desc: '거래금액별 법정 상한', time: '20초', catSlug: '부동산', catName: '부동산', works: false },
-  { slug: '전월세-환산', name: '전월세 환산', desc: '전세↔월세 변환', time: '15초', catSlug: '부동산', catName: '부동산', works: false },
-  { slug: 'ltv-dti', name: 'LTV / DTI', desc: '주택 대출 한도 비율', time: '30초', catSlug: '부동산', catName: '부동산', works: false },
+  { slug: '취득세', name: '취득세', desc: '주택 취득 시 세액', time: '30초', catSlug: '부동산', catName: '부동산', works: true },
+  { slug: '종합부동산세', name: '종합부동산세', desc: '공시가격 기준 종부세', time: '45초', catSlug: '부동산', catName: '부동산', works: true },
+  { slug: '중개수수료', name: '중개수수료', desc: '거래금액별 법정 상한', time: '20초', catSlug: '부동산', catName: '부동산', works: true },
+  { slug: '전월세-환산', name: '전월세 환산', desc: '전세↔월세 변환', time: '15초', catSlug: '부동산', catName: '부동산', works: true },
+  { slug: 'ltv-dti', name: 'LTV / DTI', desc: '주택 대출 한도 비율', time: '30초', catSlug: '부동산', catName: '부동산', works: true },
   // 금융
   { slug: '주택담보대출', name: '주택담보대출', desc: 'LTV/DSR 반영 한도', time: '30초', catSlug: '금융', catName: '금융·대출', works: true },
   { slug: '신용대출', name: '신용대출', desc: '월 상환액·총이자', time: '20초', catSlug: '금융', catName: '금융·대출', works: true },

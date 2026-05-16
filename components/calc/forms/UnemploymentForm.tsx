@@ -107,7 +107,7 @@ function RelatedCalcs({ items }: any) {
 
 export function UnemploymentForm() {
   const [daily, setDaily] = useState(12);
-  const [age, setAge] = useState('50미만');
+  const [age, setAge] = useState<'50미만' | '50이상'>('50미만');
   const [insured, setInsured] = useState(3);
   const r = useMemo(() => computeUnemployment({
     avgDailyWageMan: daily, ageGroup: age, insuredYears: insured,

@@ -3,6 +3,72 @@
 // 모든 입력은 합리적 단위(만원/년/명/%)로 받고 결과는 정밀하게 반환
 // ============================================================
 
+// 0) 연봉 실수령액 (4대보험 + 간이세액표 기반 근사)
+export function computeSalary({ annualMan = 5000, dependents = 1, children = 0 }) {
+  const annualGross = annualMan * 10000;
+  const monthlyGross = Math.round(annualGross / 12);
+
+  // 4대보험
+  const npBase = Math.min(6_170_000, Math.max(390_000, monthlyGross));
+  const np = Math.round(npBase * 0.045);          // 국민연금 4.5%
+  const hi = Math.round(monthlyGross * 0.03545);  // 건강보험 3.545%
+  const ltc = Math.round(hi * 0.1295);            // 장기요양 (건보×12.95%)
+  const ei = Math.round(monthlyGross * 0.009);    // 고용보험 0.9%
+  const insurance = np + hi + ltc + ei;
+
+  // 근로소득공제
+  let earnDed = 0;
+  if (annualGross <= 5_000_000) earnDed = annualGross * 0.7;
+  else if (annualGross <= 15_000_000) earnDed = 3_500_000 + (annualGross - 5_000_000) * 0.4;
+  else if (annualGross <= 45_000_000) earnDed = 7_500_000 + (annualGross - 15_000_000) * 0.15;
+  else if (annualGross <= 100_000_000) earnDed = 12_000_000 + (annualGross - 45_000_000) * 0.05;
+  else earnDed = 14_750_000 + (annualGross - 100_000_000) * 0.02;
+  earnDed = Math.min(earnDed, 20_000_000);
+
+  // 인적공제 + 보험료 소득공제
+  const personalDed = 1_500_000 * (1 + dependents);
+  const annualInsurance = insurance * 12;
+  const taxBase = Math.max(0, annualGross - earnDed - personalDed - annualInsurance);
+
+  // 누진세율 (소득세)
+  const brackets: Array<[number, number, number]> = [
+    [14_000_000, 0.06, 0],
+    [50_000_000, 0.15, 1_260_000],
+    [88_000_000, 0.24, 5_760_000],
+    [150_000_000, 0.35, 15_440_000],
+    [300_000_000, 0.38, 19_940_000],
+    [500_000_000, 0.40, 25_940_000],
+    [1_000_000_000, 0.42, 35_940_000],
+    [Infinity, 0.45, 65_940_000],
+  ];
+  let annualTax = 0;
+  for (const [limit, rate, deduct] of brackets) {
+    if (taxBase <= limit) { annualTax = taxBase * rate - deduct; break; }
+  }
+
+  // 근로소득세액공제 (간이) + 자녀세액공제
+  const earnedTaxCredit = Math.min(740_000, Math.max(0, annualTax) * 0.55);
+  let childCredit = 0;
+  if (children >= 1) childCredit += 250_000;
+  if (children >= 2) childCredit += 300_000;
+  if (children >= 3) childCredit += 400_000 * (children - 2);
+  annualTax = Math.max(0, annualTax - earnedTaxCredit - childCredit);
+
+  const income_tax = Math.round(annualTax / 12);
+  const local_tax = Math.round(income_tax * 0.1);
+  const total_tax = income_tax + local_tax;
+  const total_deduct = insurance + total_tax;
+  const netMonth = monthlyGross - total_deduct;
+  const netYear = netMonth * 12;
+
+  return {
+    monthlyGross,
+    netMonth,
+    netYear,
+    breakdown: { np, hi, ltc, ei, insurance, income_tax, local_tax, total_tax, total_deduct },
+  };
+}
+
 // 1) 퇴직금
 // 법정 퇴직금 = 1일 평균임금 × 30 × (재직일수 / 365)
 // 1일 평균임금 = 최근 3개월 임금총액 / 3개월 일수 (단순화: 월급 기준)
@@ -110,10 +176,14 @@ export function computeIncomeTax({ businessIncomeMan = 3000, employmentIncomeMan
 }
 
 // 4) 실업급여
-export function computeUnemployment({ avgDailyWageMan = 12, ageGroup = '50미만', insuredYears = 3 }) {
+export function computeUnemployment({ avgDailyWageMan = 12, ageGroup = '50미만', insuredYears = 3 }: {
+  avgDailyWageMan?: number;
+  ageGroup?: '50미만' | '50이상';
+  insuredYears?: number;
+}) {
   const avgDaily = avgDailyWageMan * 10000;
   const dailyBenefit = Math.min(66_000, Math.max(64_192, avgDaily * 0.6));
-  const table = {
+  const table: Record<'50미만' | '50이상', number[]> = {
     '50미만': [120, 150, 180, 210, 240],
     '50이상': [120, 180, 210, 240, 270],
   };
@@ -153,8 +223,18 @@ export function computeCapitalGains({
   // 1주택 12억 이하 비과세 (2년 이상 보유 + 일부 거주요건)
   if (houseStatus === 'one_under12' && yearsHeld >= 2 && sale <= 1_200_000_000) {
     return {
-      gain, taxableGain: 0, tax: 0, localTax: 0, totalTax: 0,
-      ltcdRate: 0, appliedRate: 0, status: 'nontax',
+      gain: Math.round(gain),
+      taxableBase: 0,
+      ltcd: 0,
+      ltcdRate: 0,
+      afterLtcd: 0,
+      taxableGain: 0,
+      tax: 0,
+      localTax: 0,
+      totalTax: 0,
+      netGain: Math.round(gain),
+      appliedRate: 0,
+      status: 'nontax' as const,
       message: '1세대 1주택 비과세 (12억 이하 + 2년 이상 보유)',
     };
   }
@@ -236,7 +316,7 @@ export function computeCapitalGains({
     totalTax: Math.round(totalTax),
     netGain: Math.round(netGain),
     appliedRate,
-    status: 'tax',
+    status: 'tax' as const,
     message: houseStatus === 'one_under12'
       ? '1세대 1주택 (12억 이하 비과세 요건 미충족 — 보유 2년 미만)'
       : houseStatus === 'one_over12'

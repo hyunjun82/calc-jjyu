@@ -1,0 +1,172 @@
+# CLAUDE.md — calc.jjyu.co.kr 작업 규칙
+
+> 이 파일은 Claude Code가 이 프로젝트에서 작업할 때 **반드시 따라야 하는 규칙**입니다.
+> 사용자가 비개발자이므로, 친절하지만 정확하게 진행하고 "추정/대충"은 금지.
+
+---
+
+## 🎯 최우선 규칙: 정확도 검증 (Playwright 대조)
+
+**모든 계산기를 새로 만들거나 수정할 때마다, 정부 공식 모의계산기와 Playwright로 실제 대조한다.**
+
+### 작업 절차 (필수 순서)
+
+1. **계산기 로직 구현** (`lib/calc/index.ts`)
+2. **폼 컴포넌트 생성** (`components/calc/forms/*.tsx`)
+3. **로컬 빌드 통과 확인** (`npm run build`)
+4. **🔴 Playwright 대조 검증** ← 절대 생략 금지
+5. **CLAUDE.md의 "오차 기록표"에 결과 기록**
+6. **commit + push**
+
+### Playwright 대조 방법
+
+```bash
+# 1. Playwright 설치 (최초 1회)
+npm install -D playwright
+npx playwright install chromium
+
+# 2. 검증 스크립트 실행
+npx ts-node scripts/verify-calculator.ts <slug>
+```
+
+검증 스크립트 위치: `scripts/verify-*.ts`
+
+각 스크립트가 해야 할 일:
+- (a) 대표 입력값 3~5개 케이스를 정한다 (저/중/고)
+- (b) Playwright로 **정부 공식 사이트**를 열어 같은 값을 입력하고 결과를 읽는다
+- (c) 우리 사이트 (`https://calc.jjyu.co.kr/calc/<slug>` 또는 로컬 `localhost:3000`)에 같은 값을 입력하고 결과를 읽는다
+- (d) **오차율 계산** (`|우리값 - 정부값| / 정부값 × 100`)
+- (e) 오차 ≤ 0.5% 면 PASS, 초과 시 FAIL → 로직 수정 후 재실행
+
+### 정부 사이트 자동화가 막힐 때 (reCAPTCHA / 공인인증 / IP 차단)
+
+1. **Headed 모드**로 Playwright 실행 (`headless: false`) → 사용자가 직접 1회 캡차 통과
+2. 그래도 막히면 **수동 비교 모드**: 정부 사이트 결과를 사용자가 직접 입력해주는 JSON 파일 (`scripts/manual-cases.json`) 작성 후 우리 사이트만 자동화로 비교
+3. 그것도 어려운 경우 **법령 원문 + 다른 민간 계산기 2곳** 교차 검증 (네이버, 사람인, 잡코리아 등)
+
+---
+
+## 📋 계산기별 정부 공식 검증 사이트
+
+| 계산기 | 정부 공식 사이트 | 비고 |
+|---|---|---|
+| 연봉 실수령액 | https://www.nts.go.kr (홈택스 → 모의계산 → 근로소득 간이세액표) | 매년 표 변경 |
+| 종합소득세 | https://www.hometax.go.kr → 세금모의계산 → 종합소득세 신고도움 | 5월만 활성 |
+| 부가가치세 | 홈택스 → 모의계산 → 부가가치세 | |
+| 양도소득세 | 홈택스 → 모의계산 → 양도소득세 자동계산 | 복잡, 케이스별 분기 많음 |
+| 취득세 | https://www.wetax.go.kr → 위택스 모의계산 → 취득세 | |
+| 종합부동산세 | 홈택스 → 종부세 간이계산 | |
+| 자동차세 | 위택스 → 자동차세 모의계산 | |
+| 자동차 취득세 | 위택스 → 자동차취득세 | |
+| 4대보험료 | https://www.4insure.or.kr → 4대보험료 계산기 | 정부 공식 |
+| 국민연금 | https://www.nps.or.kr → 노령연금 예상액 조회 | |
+| 건강보험료 | https://www.nhis.or.kr → 보험료 모의계산 | |
+| 기초연금 | https://basicpension.mohw.go.kr → 모의계산 | |
+| 기초생활수급 | https://www.bokjiro.go.kr → 복지서비스 모의계산 | |
+| 실업급여 | https://www.ei.go.kr → 실업급여 모의계산 | 고용보험 |
+| 퇴직금 | https://www.moel.go.kr → 퇴직금 계산기 (고용노동부) | |
+| 주담대/DSR/LTV | https://www.fss.or.kr (금융감독원) 또는 각 은행 계산기 | |
+| 신용대출/예적금/복리 | 표준 PMT/복리 공식 → 엑셀/계산기와 비교 | 100% 수학 |
+| 중개수수료 | 한국공인중개사협회 계산기 | |
+| 전월세 환산 | 한국부동산원 모의계산 | |
+| 연차/주휴/야간수당 | https://www.moel.go.kr → 근로기준법 계산기 (고용노동부) | |
+| 통상임금 | 동일 (고용노동부 매뉴얼) | |
+| BMI / 칼로리 | https://obesity.or.kr (대한비만학회) 공식 | |
+| 임신주수 | 표준 산부인과 (Naegele 공식) — 수학 검증 | |
+| 디데이/단위변환 | 수학적으로 100% 정확 (검증 불필요) | |
+| 환율 | https://www.bok.or.kr (한국은행 매매기준율) | 매일 변경 |
+| 과태료 | 도로교통법 시행령 별표 (법령) | 경찰청 사이트 |
+| 유류비 | https://www.opinet.co.kr (오피넷 - 한국석유공사) | 유가 매일 변경 |
+| 중고차 시세 | https://www.kbchachacha.com / https://www.encar.com | API 없음, 참고용 명시 필수 |
+
+---
+
+## 📊 오차 허용 기준
+
+| 카테고리 | 허용 오차 | 비고 |
+|---|---|---|
+| 수학적 계산 (PMT, BMI, 단위, 디데이) | **0%** | 완전 일치 |
+| 법정 세율 적용 (취득세, 자동차세, 과태료) | **0%** | 표 그대로 |
+| 누진세율 (소득세, 양도세, 종부세) | **≤ 0.1%** | 반올림 차이만 허용 |
+| 4대보험 / 건강보험 | **≤ 0.5%** | 정부 사이트 자체 반올림 차이 |
+| 추정·평균값 (환율, 중고차) | **참고용** 명시, 검증 면제 | "실시간 변동" 안내 |
+
+오차 초과 시 **즉시 로직 수정** → 다시 빌드 → 재검증.
+
+---
+
+## 🗂️ 작업 후 기록할 위치
+
+이 파일 하단 **"검증 기록"** 섹션에 다음 형식으로 추가:
+
+```
+### YYYY-MM-DD <계산기 이름>
+- 정부 사이트: <URL>
+- 테스트 케이스: 3건 (저/중/고)
+- 결과: 평균 오차 0.03%, 최대 0.08% → PASS
+- 사용 스크립트: scripts/verify-salary.ts
+- 비고: (있으면)
+```
+
+---
+
+## 🛠️ 코드 작성 규칙
+
+### 폴더 구조 (절대 변경 금지)
+```
+lib/calc/index.ts        ← 모든 계산 함수 (export function compute*)
+components/calc/forms/   ← 폼 컴포넌트 1개당 1파일
+components/calc/CalculatorWidget.tsx  ← slug → form 매핑
+lib/data/calculators.ts  ← 38개 메타데이터 (works: true/false)
+lib/data/guides.ts       ← SEO 본문 가이드
+```
+
+### 새 계산기 추가 시 4곳 모두 수정
+1. `lib/calc/index.ts` — 함수 추가
+2. `components/calc/forms/XxxForm.tsx` — 폼 컴포넌트
+3. `components/calc/CalculatorWidget.tsx` — dynamic import + slug 매칭
+4. `lib/data/calculators.ts` — works: true 변경
+
+### 빌드 환경 (변경 금지)
+- `next.config.mjs`: `output: 'export'` (Cloudflare Pages 정적 호스팅)
+- `app/robots.ts`, `app/sitemap.ts`: `export const dynamic = 'force-static'`
+- 한글 슬러그 OK (Next.js 자동 처리)
+
+### 폼 컴포넌트 디자인 일관성
+모든 폼은 **SalaryForm.tsx 스타일** 따른다:
+- 상단 stepper (1, 2, 3 단계 표시)
+- 입력 필드 (NumberField, SegSel 패턴)
+- result-card 큰 숫자 + 부가 정보
+- 하단 details (세부 내역 펼치기)
+- compare-line (출처/근거 한 줄)
+
+---
+
+## 🚀 배포
+
+- **branch**: `main`만 사용. 다른 브랜치 만들지 말 것
+- **Cloudflare Pages**: main push → 자동 빌드 (out/ 디렉토리)
+- **commit 메시지**: 한국어 OK, "Add/Fix" 영어 동사로 시작
+- 절대 force push 금지 (사용자가 명시적으로 요청한 경우만)
+
+---
+
+## ⚠️ 금지 사항
+
+1. ❌ Playwright 검증 없이 새 계산기 commit
+2. ❌ "간이 추정" "단순화" 같은 표현으로 부정확한 계산 덮기
+3. ❌ 정부 사이트 결과와 다른데 "비슷하다"고 넘어가기
+4. ❌ 2026년 기준이 아닌 옛 요율 사용
+5. ❌ `_design-archive/` 폴더 수정 (초기 시안, 참고만)
+6. ❌ `output: 'export'` 제거 (배포 깨짐)
+
+---
+
+## 📝 검증 기록
+
+> 새 계산기 만들거나 수정할 때마다 여기에 추가.
+
+### 2026-05-16 (초기 38개 일괄 구축 — Playwright 검증 미실시)
+- 1차 빌드: 모든 계산기 `works: true`, 빌드 통과
+- **⚠️ 미검증 항목**: 모든 38개 계산기 Playwright 대조 미실시 (사용자 승인 후 별도 진행 예정)
+- 다음 작업 시 위 검증 절차 적용 필수

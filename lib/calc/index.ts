@@ -1297,7 +1297,8 @@ export function computeFine({
     signal: 60_000, speed20: 40_000, speed40: 70_000,
     speed60: 100_000, speed60plus: 130_000,
     parking: 40_000, seatbelt: 30_000, phone: 60_000,
-    dui: 1_500_000,
+    // 음주는 단순 과태료가 아닌 형사처벌 (0.03~0.08%: 1년 이하 징역 또는 500만 이하 벌금)
+    dui: 5_000_000,
   };
   const POINTS: Record<string, number> = {
     signal: 15, speed20: 0, speed40: 15, speed60: 30, speed60plus: 60,

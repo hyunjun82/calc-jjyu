@@ -4,31 +4,34 @@
 // ============================================================
 
 // 0) 연봉 실수령액 (4대보험 + 간이세액표 기반 근사)
-export function computeSalary({ annualMan = 5000, dependents = 1, children = 0 }) {
+export function computeSalary({ annualMan = 5000, dependents = 1, children = 0, nonTaxMonthlyMan = 20 }) {
   const annualGross = annualMan * 10000;
   const monthlyGross = Math.round(annualGross / 12);
+  const nonTaxMonthly = nonTaxMonthlyMan * 10000;
+  const taxableMonthly = Math.max(0, monthlyGross - nonTaxMonthly);
+  const taxableAnnual = taxableMonthly * 12;
 
-  // 4대보험
-  const npBase = Math.min(6_170_000, Math.max(390_000, monthlyGross));
+  // 4대보험 (과세 보수월액 기준)
+  const npBase = Math.min(6_170_000, Math.max(390_000, taxableMonthly));
   const np = Math.round(npBase * 0.045);          // 국민연금 4.5%
-  const hi = Math.round(monthlyGross * 0.03545);  // 건강보험 3.545%
-  const ltc = Math.round(hi * 0.1295);            // 장기요양 (건보×12.95%)
-  const ei = Math.round(monthlyGross * 0.009);    // 고용보험 0.9%
+  const hi = Math.round(taxableMonthly * 0.03595);  // 건강보험 3.595% (2026)
+  const ltc = Math.round(hi * 0.1314);              // 장기요양 (건보×13.14%, 2026)
+  const ei = Math.round(taxableMonthly * 0.009);    // 고용보험 0.9%
   const insurance = np + hi + ltc + ei;
 
-  // 근로소득공제
+  // 근로소득공제 (과세 연봉 기준)
   let earnDed = 0;
-  if (annualGross <= 5_000_000) earnDed = annualGross * 0.7;
-  else if (annualGross <= 15_000_000) earnDed = 3_500_000 + (annualGross - 5_000_000) * 0.4;
-  else if (annualGross <= 45_000_000) earnDed = 7_500_000 + (annualGross - 15_000_000) * 0.15;
-  else if (annualGross <= 100_000_000) earnDed = 12_000_000 + (annualGross - 45_000_000) * 0.05;
-  else earnDed = 14_750_000 + (annualGross - 100_000_000) * 0.02;
+  if (taxableAnnual <= 5_000_000) earnDed = taxableAnnual * 0.7;
+  else if (taxableAnnual <= 15_000_000) earnDed = 3_500_000 + (taxableAnnual - 5_000_000) * 0.4;
+  else if (taxableAnnual <= 45_000_000) earnDed = 7_500_000 + (taxableAnnual - 15_000_000) * 0.15;
+  else if (taxableAnnual <= 100_000_000) earnDed = 12_000_000 + (taxableAnnual - 45_000_000) * 0.05;
+  else earnDed = 14_750_000 + (taxableAnnual - 100_000_000) * 0.02;
   earnDed = Math.min(earnDed, 20_000_000);
 
   // 인적공제 + 보험료 소득공제
   const personalDed = 1_500_000 * (1 + dependents);
   const annualInsurance = insurance * 12;
-  const taxBase = Math.max(0, annualGross - earnDed - personalDed - annualInsurance);
+  const taxBase = Math.max(0, taxableAnnual - earnDed - personalDed - annualInsurance);
 
   // 누진세율 (소득세)
   const brackets: Array<[number, number, number]> = [
@@ -182,7 +185,8 @@ export function computeUnemployment({ avgDailyWageMan = 12, ageGroup = '50미만
   insuredYears?: number;
 }) {
   const avgDaily = avgDailyWageMan * 10000;
-  const dailyBenefit = Math.min(66_000, Math.max(64_192, avgDaily * 0.6));
+  // 2026년 기준: 상한 68,100원 / 하한 66,048원 (최저시급 10,320원의 80% × 8시간)
+  const dailyBenefit = Math.min(68_100, Math.max(66_048, avgDaily * 0.6));
   const table: Record<'50미만' | '50이상', number[]> = {
     '50미만': [120, 150, 180, 210, 240],
     '50이상': [120, 180, 210, 240, 270],
@@ -199,8 +203,8 @@ export function computeUnemployment({ avgDailyWageMan = 12, ageGroup = '50미만
     dailyBenefit: Math.round(dailyBenefit),
     days, monthly: Math.round(monthly),
     total: Math.round(total),
-    isMax: dailyBenefit >= 66_000,
-    isMin: dailyBenefit <= 64_192,
+    isMax: dailyBenefit >= 68_100,
+    isMin: dailyBenefit <= 66_048,
   };
 }
 
@@ -679,7 +683,7 @@ export function computeAnnualLeave({
 // 18) 주휴수당 (근로기준법 55조 + 시행령 30조)
 // 주 15시간 이상 + 1주 소정근로일 만근 시 1주일에 1일분 유급휴일
 export function computeWeeklyHoliday({
-  hourlyWage = 10030,  // 2026 최저시급 10,030원
+  hourlyWage = 10320,  // 2026 최저시급 10,320원
   weeklyHours = 40,
 }) {
   if (weeklyHours < 15) {
@@ -773,10 +777,10 @@ export function compute4Insurance({ monthlyWageMan = 300 }) {
   const npBase = Math.min(6_170_000, Math.max(390_000, wage));
   const npWorker = npBase * 0.045;
   const npEmployer = npBase * 0.045;
-  const hiWorker = wage * 0.03545;
-  const hiEmployer = wage * 0.03545;
-  const ltcWorker = hiWorker * 0.1295;
-  const ltcEmployer = hiEmployer * 0.1295;
+  const hiWorker = wage * 0.03595;     // 2026 건강보험 3.595%
+  const hiEmployer = wage * 0.03595;
+  const ltcWorker = hiWorker * 0.1314;  // 2026 장기요양 13.14%
+  const ltcEmployer = hiEmployer * 0.1314;
   const eiWorker = wage * 0.009;
   const eiEmployer = wage * 0.0115;  // 0.9% + 고용안정 0.25%
   const wcEmployer = wage * 0.015;
@@ -870,14 +874,15 @@ export function computeYearEndTax({
   };
 }
 
-// 24) 기초연금 (2026: 단독 ~33.5만, 부부 ~53.6만)
+// 24) 기초연금 (2026 보건복지부 고시: 단독 34.97만, 부부 55.96만)
+// 선정기준액: 단독 247만, 부부 395.2만
 export function computeBasicPension({
   age = 70, isCouple = false, monthlyIncomeMan = 100,
 }) {
-  const SINGLE_MAX = 334_810;
-  const COUPLE_MAX = 535_700;
-  const SINGLE_THRESHOLD = 2_280_000;
-  const COUPLE_THRESHOLD = 3_648_000;
+  const SINGLE_MAX = 349_700;
+  const COUPLE_MAX = 559_600;
+  const SINGLE_THRESHOLD = 2_470_000;
+  const COUPLE_THRESHOLD = 3_952_000;
   if (age < 65) {
     return { eligible: false, reason: '만 65세 이상만 신청 가능',
       monthly: 0, annual: 0, threshold: SINGLE_THRESHOLD, maxPension: SINGLE_MAX };
@@ -904,7 +909,10 @@ export function computeBasicPension({
 }
 
 // 25) 국민연금 예상 노령연금 (10년 이상 가입 시)
-// 공식: (A + B) × 0.5 × (1 + 5% × (가입년-20))
+// 공식 (2026 신규 가입자): 기본연금월액 = (A + B) × (1.245 / 12) × (1 + 0.05 × (n - 20))
+// A = 전체 가입자 평균소득월액 (2026 약 290만), B = 본인 평균소득월액
+// 비례상수 1.245 (2008년 1.5에서 매년 0.015씩 감소, 2028년 1.2 도달)
+// 가입 20년 미만은 (n/20) 비례 감액
 export function computeNationalPension({
   avgMonthlyIncomeMan = 300, insuredMonths = 240,
 }) {
@@ -912,12 +920,18 @@ export function computeNationalPension({
   const A = 2_900_000;
   const B = avgMonthlyIncomeMan * 10000;
   if (insuredYears < 10) {
-    return { eligible: false, reason: '가입기간 10년 미만',
+    return { eligible: false, reason: '가입기간 10년 미만 (노령연금 미수급)',
       monthly: 0, annual: 0, insuredYears, A, B };
   }
-  let formula = (A + B) * 0.5;
-  if (insuredYears >= 20) formula *= (1 + 0.05 * (insuredYears - 20));
-  else formula *= insuredYears / 20;
+  // 기본연금월액 (월 단위)
+  const PROPORTION = 1.245 / 12;  // 비례상수 (월 환산)
+  let formula = (A + B) * PROPORTION;
+  if (insuredYears >= 20) {
+    formula *= (1 + 0.05 * (insuredYears - 20));
+  } else {
+    // 10~20년: (n/20) 비례 + 기본 부분
+    formula *= insuredYears / 20;
+  }
   return {
     eligible: true,
     reason: `${insuredYears.toFixed(1)}년 가입`,
@@ -937,10 +951,12 @@ export function computeHealthInsurance({
 }) {
   if (type === 'employee') {
     const wage = monthlyWageMan * 10000;
-    const workerHI = wage * 0.03545;
-    const employerHI = wage * 0.03545;
-    const workerLTC = workerHI * 0.1295;
-    const employerLTC = employerHI * 0.1295;
+    // 2026 건강보험료율 7.19% (근로자 3.595%, 사업주 3.595%)
+    // 2026 장기요양보험료율 (건보 대비) 13.14%
+    const workerHI = wage * 0.03595;
+    const employerHI = wage * 0.03595;
+    const workerLTC = workerHI * 0.1314;
+    const employerLTC = employerHI * 0.1314;
     return {
       type: 'employee' as const,
       workerHI: Math.round(workerHI), employerHI: Math.round(employerHI),
@@ -975,9 +991,10 @@ export function computeHealthInsurance({
 export function computeBasicLife({
   householdSize = 1, monthlyIncomeMan = 50,
 }) {
+  // 2026 보건복지부 고시 (전년 대비 6.51% 인상, 역대 최대)
   const MEDIAN_INCOME: Record<number, number> = {
-    1: 2_415_000, 2: 3_989_000, 3: 5_104_000,
-    4: 6_205_000, 5: 7_277_000, 6: 8_321_000, 7: 9_346_000,
+    1: 2_564_238, 2: 4_244_519, 3: 5_434_063,
+    4: 6_492_000, 5: 7_605_000, 6: 8_676_000, 7: 9_710_000,
   };
   const median = MEDIAN_INCOME[Math.min(7, Math.max(1, householdSize))] || MEDIAN_INCOME[7];
   const livingThreshold = median * 0.32;     // 생계 32%

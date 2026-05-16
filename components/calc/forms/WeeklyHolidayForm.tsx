@@ -4,7 +4,7 @@ import { fmtKRW } from '@/lib/format';
 import { computeWeeklyHoliday } from '@/lib/calc';
 
 export function WeeklyHolidayForm() {
-  const [hourly, setHourly] = useState(10030);
+  const [hourly, setHourly] = useState(10320);  // 2026 최저시급
   const [weekly, setWeekly] = useState(40);
 
   const r = useMemo(() => computeWeeklyHoliday({
@@ -20,14 +20,14 @@ export function WeeklyHolidayForm() {
       </div>
 
       <div className="field">
-        <label>시급 <span className="hint">원 · 2026 최저시급 10,030원</span></label>
+        <label>시급 <span className="hint">원 · 2026 최저시급 10,320원</span></label>
         <div className="input-wrap">
           <input type="text" inputMode="numeric" value={hourly.toLocaleString()}
             onChange={(e) => setHourly(Math.min(200000, Math.max(0, +e.target.value.replace(/[^0-9]/g, '') || 0)))} />
           <span className="suffix">원</span>
         </div>
         <div className="preset-row">
-          <button className={`preset-chip ${hourly === 10030 ? 'on' : ''}`} onClick={() => setHourly(10030)}>최저시급</button>
+          <button className={`preset-chip ${hourly === 10320 ? 'on' : ''}`} onClick={() => setHourly(10320)}>최저시급</button>
           <button className={`preset-chip ${hourly === 12000 ? 'on' : ''}`} onClick={() => setHourly(12000)}>12,000원</button>
           <button className={`preset-chip ${hourly === 15000 ? 'on' : ''}`} onClick={() => setHourly(15000)}>15,000원</button>
         </div>

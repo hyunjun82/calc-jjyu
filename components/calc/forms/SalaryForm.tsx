@@ -43,7 +43,8 @@ export function SalaryForm() {
   const [salary, setSalary] = useState(5000);
   const [dependents, setDependents] = useState(1);
   const [children_, setChildren] = useState(0);
-  const r = useMemo(() => computeSalary({ annualMan: salary, dependents, children: children_ }), [salary, dependents, children_]);
+  const [meal, setMeal] = useState(20);
+  const r = useMemo(() => computeSalary({ annualMan: salary, dependents, children: children_, nonTaxMonthlyMan: meal }), [salary, dependents, children_, meal]);
 
   const cmp = compareToAverage(salary);
   const presets = [
